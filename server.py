@@ -46,8 +46,12 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
-    flash('Great-booking complete!')
+    placesAvailable = int(competition['numberOfPlaces'])    
+    if placesRequired <= placesAvailable:
+        competition['numberOfPlaces'] = placesAvailable - placesRequired
+        flash('Great-booking complete!')
+    else:
+        flash("You cannot book more places than are available")    
     return render_template('welcome.html', club=club, competitions=competitions)
 
 
@@ -57,3 +61,6 @@ def purchasePlaces():
 @app.route('/logout')
 def logout():
     return redirect(url_for('index'))
+
+if __name__ == '__main__':
+    app.run(host="127.0.0.1", port=5000, debug=True)
