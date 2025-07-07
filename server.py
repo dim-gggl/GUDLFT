@@ -13,10 +13,11 @@ def loadCompetitions():
          listOfCompetitions = json.load(comps)['competitions']
          return listOfCompetitions
 
-def create_app():
+def create_app(config):
     app = Flask(__name__)
     app.secret_key = 'something_special'
-
+    app.config.from_object(config)
+    
     competitions = loadCompetitions()
     clubs = loadClubs()
 
