@@ -7,3 +7,4 @@ def test_club_points_not_updated_after_purchase(client):
     response = client.post("/purchasePlaces", data={"name": "Simply Lift", "competition": "Spring Festival", "places": "1"})
     assert club["points"] == "13"
     assert competition["numberOfPlaces"] == "25"
+
