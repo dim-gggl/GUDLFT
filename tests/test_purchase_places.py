@@ -1,47 +1,44 @@
-from conftests import client
-from models import Club, Competition, CompetitionPlace
-from server import load_json
+import pytest
+from server import load_json, save_clubs_and_competitions, app
+from config import config
 
+@pytest.fixture
+def test_app():
+    app.config.from_object(config['test'])
+    yield app
 
-# def test_club_points_not_updated_after_purchase(client):
-#     club = {"name": "Simply Lift", "email": "john@simplylift.co", "points": "13"}
-#     competition = {"name": "Spring Festival", "date": "2025-03-27 10:00:00", "numberOfPlaces": "25"}
-#     response = client.post("/purchasePlaces", data={"name": club["name"], "competition": competition["name"], "places": "1"})
-#     assert club["points"] == "13"
-#     assert competition["numberOfPlaces"] == "25"
+def test_club_points_updated_after_purchase(test_app):
+    initial_clubs = load_json(test_app.config["JSON_CLUBS"], "clubs")
+    initial_club = next(club for club in initial_clubs if club["name"] == "Simply Lift")
 
+    initial_competitions = load_json(test_app.config["JSON_COMPETITIONS"], "competitions")
+    initial_competition = next(comp for comp in initial_competitions if comp["name"] == "Spring Festival")
 
-def test_club_points_updated_after_purchase(client):
-    initial_clubs = load_json(app.config["JSON_CLUBS"], "clubs")
-    initial_club = next(club for club in initial_clubs if club.name == "Simply Lift")
-
-    initial_competitions = load_json(app.config["JSON_COMPETITIONS"], "competitions")
-    initial_competition = next(comp for comp in initial_competitions if comp.name == "Spring Festival")
-
-    initial_points = initial_club.points
-    initial_number_of_places = initial_competition.numberOfPlaces
+    initial_points = initial_club["points"]
+    initial_number_of_places = initial_competition["numberOfPlaces"]
     
-    response = client.post(
-        "/purchasePlaces",
-        data={
-            "club": "Simply Lift",
-            "competition": "Spring Festival",
-            "places": "1"
-        }
-    )
-    updated_clubs = data_manager.load_clubs()
-    updated_competitions = data_manager.load_competitions()
+    with test_app.test_client() as client:
+        response = client.post(
+            "/purchasePlaces",
+            data={
+                "club": "Simply Lift",
+                "competition": "Spring Festival",
+                "places": "1"
+            }
+        )
+        assert response.status_code == 200
+    
+    updated_clubs = load_json(test_app.config["JSON_CLUBS"], "clubs")
+    updated_competitions = load_json(test_app.config["JSON_COMPETITIONS"], "competitions")
+    
     updated_club = next(
-        club for club in updated_clubs if club.name == "Simply Lift"
+        club for club in updated_clubs if club["name"] == "Simply Lift"
     )
     updated_competition = next(
-        comp for comp in updated_competitions if comp.name == "Spring Festival"
+        comp for comp in updated_competitions if comp["name"] == "Spring Festival"
     )
     
-    assert updated_club.points == initial_points - 1
-    assert updated_competition.numberOfPlaces == initial_number_of_places - 1
-
-    data_manager.save_clubs(initial_clubs)
-    data_manager.save_competitions(initial_competitions)
-
+    assert int(updated_club["points"]) == int(initial_points) - 1
+    assert int(updated_competition["numberOfPlaces"]) == int(initial_number_of_places) - 1
+    save_clubs_and_competitions(test_app, updated_clubs, updated_competitions)
 
