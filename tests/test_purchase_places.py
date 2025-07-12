@@ -1,7 +1,7 @@
 from conftests import client
 from models import Club, Competition, CompetitionPlace
+from server import load_json
 
-from server import data_manager
 
 # def test_club_points_not_updated_after_purchase(client):
 #     club = {"name": "Simply Lift", "email": "john@simplylift.co", "points": "13"}
@@ -12,10 +12,10 @@ from server import data_manager
 
 
 def test_club_points_updated_after_purchase(client):
-    initial_clubs = data_manager.load_clubs()
+    initial_clubs = load_json(app.config["JSON_CLUBS"], "clubs")
     initial_club = next(club for club in initial_clubs if club.name == "Simply Lift")
 
-    initial_competitions = data_manager.load_competitions()
+    initial_competitions = load_json(app.config["JSON_COMPETITIONS"], "competitions")
     initial_competition = next(comp for comp in initial_competitions if comp.name == "Spring Festival")
 
     initial_points = initial_club.points
