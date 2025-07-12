@@ -2,7 +2,10 @@ bin
 include
 lib
 .Python
-tests/
 .envrc
 __pycache__
 .DS_Store
+.vscode
+CACHEDIR.TAG
+.pytest_cache
+pyvenv.cfg
