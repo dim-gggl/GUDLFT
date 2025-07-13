@@ -89,7 +89,7 @@ def purchasePlaces():
         "competitions"
     )
     current_clubs = load_data(current_app.config["JSON_CLUBS"], "clubs")
-    
+
     competition = [c for c in current_competitions if c["name"] == request.form["competition"]][0]
     club = [c for c in current_clubs if c["name"] == request.form["club"]][0]
 
