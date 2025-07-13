@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 from copy import deepcopy
+from flask import render_template
 
 import server
 from server import app
@@ -38,10 +39,10 @@ class MockDataManager:
         server.clubs = deepcopy(self.stored_clubs)
         server.competitions = deepcopy(self.stored_competitions)
     
-    def load_json(self, file_path, key):
+    def load_json(self, file_path, key=None):
         """Mock load_json function that returns current state"""
         if key == "clubs":
-            return self.stored_clubs  
+            return self.stored_clubs
         if key == "competitions":
             return self.stored_competitions
         return []
@@ -184,3 +185,28 @@ def test_validation_rules():
         {"numberOfPlaces": 10}
     )
     assert result is None
+
+
+def test_display_points(test_app, mock_json_functions):
+    """Test that the display points page is rendered"""
+    with test_app.test_client() as client:
+        response = client.get("/displayPoints")
+        assert response.status_code == 200
+        assert "Points" in response.data.decode("utf-8")
+
+
+def test_display_points_with_no_clubs(test_app, mock_json_functions):
+    """Test that the display points page is rendered with no clubs"""
+    def empty_clubs_load_json(file_path, key=None):
+        if key == "clubs":
+            return []
+        if key == "competitions":
+            return mock_json_functions.stored_competitions
+        return []
+    
+    with patch('server.load_json', side_effect=empty_clubs_load_json):
+        server.clubs = []
+        
+        with test_app.test_client() as client:
+            response = client.get("/displayPoints")
+            assert "No clubs found" in response.data.decode("utf-8")
