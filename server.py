@@ -14,7 +14,7 @@ from config import config
 from validators import validate_places_required, validate_competition_date
 
 
-def load_json(file_path, key):
+def load_data(file_path, key):
     """Load JSON data from a club or competition file"""
     with open(file_path) as f:
         return json.load(f)[key]
@@ -43,8 +43,8 @@ def create_app():
 
 app = create_app()
 
-clubs = load_json(app.config["JSON_CLUBS"], "clubs")
-competitions = load_json(app.config["JSON_COMPETITIONS"], "competitions")
+clubs = load_data(app.config["JSON_CLUBS"], "clubs")
+competitions = load_data(app.config["JSON_COMPETITIONS"], "competitions")
 
 @app.route("/")
 def index():
@@ -84,11 +84,11 @@ def book(competition, club):
 
 @app.route("/purchasePlaces",methods=["POST"])
 def purchasePlaces():
-    current_competitions = load_json(
+    current_competitions = load_data(
         current_app.config["JSON_COMPETITIONS"], 
         "competitions"
     )
-    current_clubs = load_json(current_app.config["JSON_CLUBS"], "clubs")
+    current_clubs = load_data(current_app.config["JSON_CLUBS"], "clubs")
     
     competition = [c for c in current_competitions if c["name"] == request.form["competition"]][0]
     club = [c for c in current_clubs if c["name"] == request.form["club"]][0]

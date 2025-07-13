@@ -1,8 +1,8 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime
 from copy import deepcopy
-from flask import render_template
+from flask import render_template, url_for
 
 import server
 from server import app
@@ -39,8 +39,8 @@ class MockDataManager:
         server.clubs = deepcopy(self.stored_clubs)
         server.competitions = deepcopy(self.stored_competitions)
     
-    def load_json(self, file_path, key=None):
-        """Mock load_json function that returns current state"""
+    def load_data(self, file_path, key=None):
+        """Mock load_data function that returns current state"""
         if key == "clubs":
             return self.stored_clubs
         if key == "competitions":
@@ -89,7 +89,7 @@ def mock_data_manager():
 @pytest.fixture
 def mock_json_functions(mock_data_manager):
     """Mock JSON functions fixture with proper patching"""
-    with patch('server.load_json', side_effect=mock_data_manager.load_json), \
+    with patch('server.load_data', side_effect=mock_data_manager.load_data), \
          patch('server.save_json', side_effect=mock_data_manager.save_json):
         mock_data_manager.reset_data()
         yield mock_data_manager
@@ -197,14 +197,14 @@ def test_display_points(test_app, mock_json_functions):
 
 def test_display_points_with_no_clubs(test_app, mock_json_functions):
     """Test that the display points page is rendered with no clubs"""
-    def empty_clubs_load_json(file_path, key=None):
+    def empty_clubs_load_data(file_path, key=None):
         if key == "clubs":
             return []
         if key == "competitions":
             return mock_json_functions.stored_competitions
         return []
     
-    with patch('server.load_json', side_effect=empty_clubs_load_json):
+    with patch('server.load_data', side_effect=empty_clubs_load_data):
         server.clubs = []
         
         with test_app.test_client() as client:
@@ -218,6 +218,7 @@ def test_unknown_email_redirects_to_index(test_app, mock_json_functions):
             "/showSummary", 
             data={"email": "unknown@example.com"}
         )
+        assert response.status_code == 302
         assert response.location == "/"
 
 def test_unknown_email_displays_error_message(test_app, mock_json_functions):
@@ -227,4 +228,4 @@ def test_unknown_email_displays_error_message(test_app, mock_json_functions):
             "/showSummary", 
             data={"email": "unknown@example.com"}
         )
-        assert "Unknown email" in response.data.decode("utf-8")
+    assert "Unknown email" in response.data.decode("utf-8")
