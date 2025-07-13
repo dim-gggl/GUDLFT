@@ -11,7 +11,7 @@ from flask import (
 )
 
 from config import config
-from validators import validate_places_required
+from validators import validate_places_required, validate_competition_date
 
 
 def load_json(file_path, key):
@@ -90,7 +90,9 @@ def purchasePlaces():
     club = [c for c in current_clubs if c["name"] == request.form["club"]][0]
 
     placesRequired = int(request.form["places"])
-    error = validate_places_required(placesRequired, club, competition)
+    reservation_error = validate_places_required(placesRequired, club, competition)
+    date_error = validate_competition_date(competition)
+    error = reservation_error or date_error
     if error:
         flash(error)
         return render_template(
@@ -98,10 +100,13 @@ def purchasePlaces():
             club=club,
             competition=competition
         )
+    
 
     competition["numberOfPlaces"] = int(competition["numberOfPlaces"]) \
         - placesRequired
     club["points"] = int(club["points"]) - placesRequired
+
+    
     save_clubs_and_competitions(
         current_app, 
         current_clubs, 

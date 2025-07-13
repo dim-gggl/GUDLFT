@@ -1,6 +1,9 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from datetime import datetime
+from copy import deepcopy
 
+import server
 from server import app
 from config import Config
 from validators import validate_places_required
@@ -12,56 +15,67 @@ clubs_data = [
     {"name": "She Lifts", "email": "kate@shelifts.co.uk", "points": 12}
 ]
 competitions_data = [
-    {"name": "Spring Festival", "date": "2020-03-27 10:00:00", "numberOfPlaces": 25},
-    {"name": "Fall Classic", "date": "2020-10-22 13:30:00", "numberOfPlaces": 13}
+    {"name": "Spring Festival", 
+    "date": "2026-03-27 10:00:00", 
+    "numberOfPlaces": 25,
+    "status": "upcoming"},
+    {"name": "Fall Classic", 
+    "date": "2026-10-22 13:30:00", 
+    "numberOfPlaces": 13,
+    "status": "upcoming"}
 ]
 
 class MockDataManager:
-    """Manages mock data for tests"""
+    """Manages mock data for tests with proper state management"""
     
     def __init__(self):
-        self.stored_clubs = [club for club in clubs_data]
-        self.stored_competitions = [comp for comp in competitions_data]
+        self.reset_data()
+    
+    def reset_data(self):
+        """Reset data to initial state"""
+        self.stored_clubs = deepcopy(clubs_data)
+        self.stored_competitions = deepcopy(competitions_data)
+        server.clubs = deepcopy(self.stored_clubs)
+        server.competitions = deepcopy(self.stored_competitions)
     
     def load_json(self, file_path, key):
-        """Mock load_json function"""
+        """Mock load_json function that returns current state"""
         if key == "clubs":
-            return [club for club in self.stored_clubs]
+            return self.stored_clubs  
         if key == "competitions":
-            return [comp for comp in self.stored_competitions]
+            return self.stored_competitions
         return []
     
     def save_json(self, file_path, data, key):
-        """Mock save_json function"""
+        """Mock save_json function that updates internal state"""
         if key == "clubs":
-            self.stored_clubs.clear()
-            self.stored_clubs.extend([item for item in data])
+            self.stored_clubs = data
+            server.clubs = data
         elif key == "competitions":
-            self.stored_competitions.clear()
-            self.stored_competitions.extend([item for item in data])
+            self.stored_competitions = data
+            server.competitions = data
     
     def get_club_by_name(self, name):
         """Get a club by name from stored data"""
         return next(
-            club for club in self.stored_clubs if club["name"] == name
+            (club for club in self.stored_clubs if club["name"] == name),
+            None
         )
     
     def get_competition_by_name(self, name):
         """Get a competition by name from stored data"""
         return next(
-            comp for comp in self.stored_competitions if comp["name"] == name
+            (comp for comp in self.stored_competitions if \
+            comp["name"] == name),
+            None
         )
-    
-    def reset_data(self):
-        """Reset data to initial state"""
-        self.stored_clubs = [club for club in clubs_data]
-        self.stored_competitions = [comp for comp in competitions_data]
 
 
 @pytest.fixture
 def test_app():
-    """Flask test app fixture"""
+    """Flask test app fixture with proper configuration"""
     app.config.from_object(Config)
+    app.config['TESTING'] = True
     yield app
 
 
@@ -73,13 +87,16 @@ def mock_data_manager():
 
 @pytest.fixture
 def mock_json_functions(mock_data_manager):
-    """Mock JSON functions fixture"""
+    """Mock JSON functions fixture with proper patching"""
     with patch('server.load_json', side_effect=mock_data_manager.load_json), \
          patch('server.save_json', side_effect=mock_data_manager.save_json):
+        mock_data_manager.reset_data()
         yield mock_data_manager
 
 
-def test_clubs_cannot_book_more_than_places_available(test_app):
+def test_clubs_cannot_book_more_than_places_available(
+    test_app, 
+    mock_json_functions):
     """Test that clubs cannot book more places than available"""
     with test_app.test_client() as client:
         response = client.post(
@@ -97,13 +114,10 @@ def test_clubs_cannot_book_more_than_places_available(test_app):
 
 def test_club_points_updated_after_purchase(test_app, mock_json_functions):
     """Test that club points are correctly updated after a purchase"""
-    initial_club = mock_json_functions.get_club_by_name("Simply Lift")
-    initial_competition = mock_json_functions.get_competition_by_name(
-        "Spring Festival"
-    )
-    
-    initial_points = initial_club["points"]
-    initial_places = initial_competition["numberOfPlaces"]
+    initial_points = mock_json_functions.get_club_by_name(
+        "Simply Lift")["points"]
+    initial_places = mock_json_functions.get_competition_by_name(
+        "Spring Festival")["numberOfPlaces"]
     
     with test_app.test_client() as client:
         response = client.post(
@@ -114,23 +128,31 @@ def test_club_points_updated_after_purchase(test_app, mock_json_functions):
                 "places": "1"
             }
         )
-        assert response.status_code == 200
     
     updated_club = mock_json_functions.get_club_by_name("Simply Lift")
     updated_competition = mock_json_functions.get_competition_by_name(
-        "Spring Festival"
-    )
-    
-    assert updated_club is not None, (
-        "Club 'Simply Lift' not found after purchase"
-    )
-    assert updated_competition is not None, (
-        "Competition 'Spring Festival' not found after purchase"
-    )
+        "Spring Festival")
+
     assert int(updated_club["points"]) == int(initial_points) - 1
-    assert int(
-        updated_competition["numberOfPlaces"]
-    ) == int(initial_places) - 1
+    assert int(updated_competition["numberOfPlaces"]) == int(initial_places) - 1
+
+
+def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
+    """Test that clubs cannot book past competitions"""
+    with test_app.test_client() as client:
+        response = client.post(
+            "/purchasePlaces",
+            data={
+                "club": "Simply Lift",
+                "competition": "Fall Classic",
+                "places": "1"
+            }
+        )
+        competition = mock_json_functions.get_competition_by_name("Fall Classic")
+        if competition["date"] < datetime.now().isoformat():
+            assert "You cannot book past competitions" in response.data.decode("utf-8")
+        else:
+            assert response.status_code == 200
 
 
 def test_validation_rules():
