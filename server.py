@@ -117,6 +117,7 @@ def purchasePlaces():
 
 @app.route("/displayPoints")
 def displayPoints():
+    """Display the points of the clubs from the main page"""
     return render_template("points.html", clubs=clubs)
 
 @app.route("/logout")
