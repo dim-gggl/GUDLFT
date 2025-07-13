@@ -210,3 +210,15 @@ def test_display_points_with_no_clubs(test_app, mock_json_functions):
         with test_app.test_client() as client:
             response = client.get("/displayPoints")
             assert "No clubs found" in response.data.decode("utf-8")
+
+def test_unknown_email_redirects_to_index(test_app, mock_json_functions):
+    """Test that an unknown email redirects to the index page"""
+    with test_app.test_client() as client:
+        response = client.post("/showSummary", data={"email": "unknown@example.com"})
+        assert response.location == "/"
+
+def test_unknown_email_displays_error_message(test_app, mock_json_functions):
+    """Test that an unknown email displays an error message"""
+    with test_app.test_client() as client:
+        response = client.post("/showSummary", data={"email": "unknown@example.com"})
+        assert "Unknown email" in response.data.decode("utf-8")

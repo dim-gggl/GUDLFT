@@ -1,6 +1,8 @@
 {% extends "base.html" %}
+{% from "macros/display_message.html" import display_message %}
 {% block content %}
     <h1>Welcome to the GUDLFT Registration Portal!</h1>
+    {{ display_message() }}
     Please enter your secretary email to continue:
     <form action="showSummary" method="post">
         <label for="email">Email:</label>

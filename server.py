@@ -51,7 +51,11 @@ def index():
     return render_template("index.html")
 
 @app.route("/showSummary",methods=["POST"])
-def showSummary():    
+def showSummary():
+    if request.form["email"] not in [club["email"] for club in clubs]:
+        flash("Unknown email")
+        return redirect(url_for("index"))
+
     club = [
         club for club in clubs if club["email"] == request.form["email"]
     ][0]
