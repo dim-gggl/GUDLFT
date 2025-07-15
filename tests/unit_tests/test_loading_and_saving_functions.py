@@ -1,4 +1,4 @@
-from server import load_data, save_json, save_clubs_and_competitions
+from server import load_data, save_json
 
 
 def test_load_data():
@@ -15,4 +15,3 @@ def test_save_json():
     data = load_data("clubs.json", "clubs")
     save_json("clubs.json", data, "clubs")
     assert load_data("clubs.json", "clubs") == data
-
