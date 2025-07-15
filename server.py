@@ -11,7 +11,7 @@ from flask import (
 )
 
 from config import config
-from validators import validate_places_required, validate_competition_date
+from validators import validate_places_required, validate_competition_date, mail_is_unknown
 
 
 def load_json(file_path, key):
@@ -51,9 +51,14 @@ def index():
     return render_template("index.html")
 
 @app.route("/showSummary",methods=["POST"])
-def showSummary():    
+def showSummary():
+    email = request.form["email"]
+    if mail_is_unknown(email, clubs):
+        flash("Unknown email")
+        return redirect(url_for("index"))
+
     club = [
-        club for club in clubs if club["email"] == request.form["email"]
+        club for club in clubs if club["email"] == email
     ][0]
     return render_template("welcome.html",club=club,competitions=competitions)
 

@@ -1,8 +1,8 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime
 from copy import deepcopy
-from flask import render_template
+
 
 import server
 from server import app
@@ -96,8 +96,7 @@ def mock_json_functions(mock_data_manager):
 
 
 def test_clubs_cannot_book_more_than_places_available(
-    test_app, 
-    mock_json_functions):
+test_app):
     """Test that clubs cannot book more places than available"""
     with test_app.test_client() as client:
         response = client.post(
@@ -187,7 +186,7 @@ def test_validation_rules():
     assert result is None
 
 
-def test_display_points(test_app, mock_json_functions):
+def test_display_points(test_app):
     """Test that the display points page is rendered"""
     with test_app.test_client() as client:
         response = client.get("/displayPoints")
@@ -210,3 +209,25 @@ def test_display_points_with_no_clubs(test_app, mock_json_functions):
         with test_app.test_client() as client:
             response = client.get("/displayPoints")
             assert "No clubs found" in response.data.decode("utf-8")
+
+
+def test_unknown_email_redirects_to_index(test_app):
+    """Test that an unknown email redirects to the index page"""
+    with test_app.test_client() as client:
+        response = client.post(
+            "/showSummary", 
+            data={"email": "unknown@example.com"},
+            follow_redirects=True
+        )
+        assert response.request.path == "/"
+
+
+def test_unknown_email_displays_error_message(test_app):
+    """Test that an unknown email displays an error message after redirect"""
+    with test_app.test_client() as client:
+        response = client.post(
+            "/showSummary", 
+            data={"email": "unknown@example.com"},
+            follow_redirects=True
+        )
+        assert "Unknown email" in response.data.decode("utf-8")
