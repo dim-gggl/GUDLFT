@@ -18,11 +18,11 @@ clubs_data = [
 competitions_data = [
     {"name": "Spring Festival", 
     "date": "2026-03-27 10:00:00", 
-    "numberOfPlaces": 25,
+    "number_of_places": 25,
     "status": "upcoming"},
     {"name": "Fall Classic", 
     "date": "2026-10-22 13:30:00", 
-    "numberOfPlaces": 13,
+    "number_of_places": 13,
     "status": "upcoming"}
 ]
 
@@ -101,7 +101,7 @@ def test_clubs_cannot_book_more_than_places_available(
     """Test that clubs cannot book more places than available"""
     with test_app.test_client() as client:
         response = client.post(
-            "/purchasePlaces",
+            "/purchase_places",
             data={
                 "club": "Simply Lift", 
                 "competition": "Spring Festival", 
@@ -118,11 +118,11 @@ def test_club_points_updated_after_purchase(test_app, mock_json_functions):
     initial_points = mock_json_functions.get_club_by_name(
         "Simply Lift")["points"]
     initial_places = mock_json_functions.get_competition_by_name(
-        "Spring Festival")["numberOfPlaces"]
+        "Spring Festival")["number_of_places"]
     
     with test_app.test_client() as client:
         response = client.post(
-            "/purchasePlaces",
+            "/purchase_places",
             data={
                 "club": "Simply Lift",
                 "competition": "Spring Festival",
@@ -135,14 +135,14 @@ def test_club_points_updated_after_purchase(test_app, mock_json_functions):
         "Spring Festival")
 
     assert int(updated_club["points"]) == int(initial_points) - 1
-    assert int(updated_competition["numberOfPlaces"]) == int(initial_places) - 1
+    assert int(updated_competition["number_of_places"]) == int(initial_places) - 1
 
 
 def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
     """Test that clubs cannot book past competitions"""
     with test_app.test_client() as client:
         response = client.post(
-            "/purchasePlaces",
+            "/purchase_places",
             data={
                 "club": "Simply Lift",
                 "competition": "Fall Classic",
@@ -161,28 +161,28 @@ def test_validation_rules():
     result = validate_places_required(
         26, 
         {"points": 21}, 
-        {"numberOfPlaces": 19}
+        {"number_of_places": 19}
     )
     assert result == "Not enough places available"
     
     result = validate_places_required(
         25, 
         {"points": 21}, 
-        {"numberOfPlaces": 30}
+        {"number_of_places": 30}
     )
     assert result == "The club does not have enough points"
     
     result = validate_places_required(
         15, 
         {"points": 20}, 
-        {"numberOfPlaces": 20}
+        {"number_of_places": 20}
     )
     assert result == "You cannot book more than 12 places"
     
     result = validate_places_required(
         5, 
         {"points": 10}, 
-        {"numberOfPlaces": 10}
+        {"number_of_places": 10}
     )
     assert result is None
 

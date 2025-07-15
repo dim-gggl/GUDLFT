@@ -40,6 +40,8 @@ def create_app():
     app.secret_key = app.config["SECRET_KEY"]
     return app
 
+def dict_from_list(key, value, list_of_dicts):
+    return [item for item in list_of_dicts if item[key] == value][0]
 
 app = create_app()
 
@@ -50,25 +52,21 @@ competitions = load_json(app.config["JSON_COMPETITIONS"], "competitions")
 def index():
     return render_template("index.html")
 
-@app.route("/showSummary",methods=["POST"])
-def showSummary():    
-    club = [
-        club for club in clubs if club["email"] == request.form["email"]
-    ][0]
+@app.route("/show_summary",methods=["POST"])
+def show_summary():    
+    club = dict_from_list("email", request.form["email"], clubs)
     return render_template("welcome.html",club=club,competitions=competitions)
 
 
 @app.route("/book/<competition>/<club>")
 def book(competition, club):
-    foundClub = [c for c in clubs if c["name"] == club][0]
-    foundCompetition = [
-        c for c in competitions if c["name"] == competition
-    ][0]
-    if foundClub and foundCompetition:
+    found_club = dict_from_list("name", club, clubs)
+    found_competition = dict_from_list("name", competition, competitions)
+    if found_club and found_competition:
         return render_template(
             "booking.html",
-            club=foundClub,
-            competition=foundCompetition
+            club=found_club,
+            competition=found_competition
         )
     else:
         flash("Something went wrong-please try again")
@@ -78,19 +76,19 @@ def book(competition, club):
             competitions=competitions
         )
 
-@app.route("/purchasePlaces",methods=["POST"])
-def purchasePlaces():
+@app.route("/purchase_places",methods=["POST"])
+def purchase_places():
     current_competitions = load_json(
         current_app.config["JSON_COMPETITIONS"], 
         "competitions"
     )
     current_clubs = load_json(current_app.config["JSON_CLUBS"], "clubs")
     
-    competition = [c for c in current_competitions if c["name"] == request.form["competition"]][0]
-    club = [c for c in current_clubs if c["name"] == request.form["club"]][0]
+    competition = dict_from_list("name", request.form["competition"], current_competitions)
+    club = dict_from_list("name", request.form["club"], current_clubs)
 
-    placesRequired = int(request.form["places"])
-    reservation_error = validate_places_required(placesRequired, club, competition)
+    places_required = int(request.form["places"])
+    reservation_error = validate_places_required(places_required, club, competition)
     date_error = validate_competition_date(competition)
     error = reservation_error or date_error
     if error:
@@ -102,9 +100,9 @@ def purchasePlaces():
         )
     
 
-    competition["numberOfPlaces"] = int(competition["numberOfPlaces"]) \
-        - placesRequired
-    club["points"] = int(club["points"]) - placesRequired
+    competition["number_of_places"] = int(competition["number_of_places"]) \
+        - places_required
+    club["points"] = int(club["points"]) - places_required
 
     
     save_clubs_and_competitions(
@@ -115,8 +113,8 @@ def purchasePlaces():
     flash("Great-booking complete!")
     return render_template("welcome.html", club=club, competitions=current_competitions)
 
-@app.route("/displayPoints")
-def displayPoints():
+@app.route("/display_points")
+def display_points():
     """Display the points of the clubs from the main page"""
     return render_template("points.html", clubs=clubs)
 
