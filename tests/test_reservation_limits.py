@@ -155,7 +155,7 @@ def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
         else:
             assert response.status_code == 200
 
-
+  
 def test_validation_rules():
     """Test validation rules separately"""    
     result = validate_places_required(
