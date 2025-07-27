@@ -56,6 +56,7 @@ def show_summary():
         flash("Unknown email")
         return redirect(url_for("index"))
 
+
 @app.route("/book/<competition>/<club>")
 def book(competition_name, club_name):
     """Display the booking page"""
