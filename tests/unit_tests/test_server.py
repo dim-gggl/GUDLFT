@@ -132,7 +132,7 @@ class TestPurchasePlacesRoute:
     
     def test_purchase_places_success(self, test_app, mock_json_functions):
         """Test that purchase_places returns 200 with success"""
-        with patch('server.process_data_persistance_during_booking', return_value=None):
+        with patch('server.update_data_after_booking', return_value=None):
             with test_app.test_client() as client:
                 response = client.post('/purchase_places', data={
                     'club': 'Simply Lift',
@@ -144,7 +144,8 @@ class TestPurchasePlacesRoute:
     
     def test_purchase_places_with_error(self, test_app, mock_json_functions):
         """Test that purchase_places returns 200 with an error"""
-        with patch('server.process_data_persistance_during_booking', return_value="Error message"):
+        with patch('server.update_data_after_booking', 
+        return_value="Error message"):
             with test_app.test_client() as client:
                 response = client.post('/purchase_places', data={
                     'club': 'Simply Lift',
