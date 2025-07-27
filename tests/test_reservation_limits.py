@@ -119,27 +119,30 @@ test_app):
 
 def test_club_points_updated_after_purchase(test_app, mock_json_functions):
     """Test that club points are correctly updated after a purchase"""
-    initial_points = mock_json_functions.get_club_by_name(
-        "Simply Lift")["points"]
-    initial_places = mock_json_functions.get_competition_by_name(
-        "Spring Festival")["number_of_places"]
-    
-    with test_app.test_client() as client:
-        response = client.post(
-            "/purchase_places",
-            data={
-                "club": "Simply Lift",
-                "competition": "Spring Festival",
-                "places": "1"
-            }
-        )
-    
-    updated_club = mock_json_functions.get_club_by_name("Simply Lift")
-    updated_competition = mock_json_functions.get_competition_by_name(
-        "Spring Festival")
+    with patch("data_manager.CLUBS", mock_json_functions.stored_clubs), \
+        patch("data_manager.COMPETITIONS", mock_json_functions.stored_competitions):
+        
+        initial_points = mock_json_functions.get_club_by_name(
+            "Simply Lift")["points"]
+        initial_places = mock_json_functions.get_competition_by_name(
+            "Spring Festival")["number_of_places"]
+        
+        with test_app.test_client() as client:
+            response = client.post(
+                "/purchase_places",
+                data={
+                    "club": "Simply Lift",
+                    "competition": "Spring Festival",
+                    "places": "1"
+                }
+            )
+        
+        updated_club = mock_json_functions.get_club_by_name("Simply Lift")
+        updated_competition = mock_json_functions.get_competition_by_name(
+            "Spring Festival")
 
-    assert int(updated_club["points"]) == int(initial_points) - 1
-    assert int(updated_competition["number_of_places"]) == int(initial_places) - 1
+        assert int(updated_club["points"]) == int(initial_points) - 1
+        assert int(updated_competition["number_of_places"]) == int(initial_places) - 1
 
 
 def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
@@ -208,8 +211,8 @@ def test_display_points_with_no_clubs(test_app, mock_json_functions):
             return mock_json_functions.stored_competitions
         return []
     
-    with patch('data_manager.load_data', side_effect=empty_clubs_load_data):
-        CLUBS = []
+    with patch('data_manager.load_data', side_effect=empty_clubs_load_data), \
+         patch('data_manager.CLUBS', []):
         
         with test_app.test_client() as client:
             response = client.get("/display_points")

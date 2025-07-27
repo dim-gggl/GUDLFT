@@ -20,7 +20,8 @@ COMPETITIONS = load_data("competitions.json", "competitions")
 def save_json(file_path: str, data: list, key: str):
     """Save JSON data to a club or competition file"""
     with open(file_path, "w") as f:
-        json.dump({key: data}, f, ensure_ascii=True, indent=4)
+        json_data = json.dumps({key: data}, ensure_ascii=True, indent=4)
+        f.write(json_data)
 
 
 def update_clubs_and_competitions(club: dict, competition: dict):
