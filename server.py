@@ -1,37 +1,25 @@
-import json
-import os
+
 from flask import (
     Flask, 
     render_template, 
     request,
     redirect, 
     flash, 
-    url_for, 
-    current_app
+    url_for
 )
 
 from config import config
-from validators import validate_places_required, validate_competition_date
+from data_manager import (
+    get_obj_by_field, 
+    process_data_persistance_during_booking,
+    CLUBS,
+    COMPETITIONS
+)
 
 
-def load_json(file_path, key):
-    """Load JSON data from a club or competition file"""
-    with open(file_path) as f:
-        return json.load(f)[key]
-
-def save_json(file_path, data, key):
-    """Save JSON data to a club or competition file"""
-    with open(file_path, "w") as f:
-        json.dump({key: data}, f, ensure_ascii=True, indent=4)
-
-def save_clubs_and_competitions(app_instance, clubs, competitions):
-    """Save clubs and competitions to their respective files"""
-    save_json(app_instance.config["JSON_CLUBS"], clubs, "clubs")
-    save_json(
-        app_instance.config["JSON_COMPETITIONS"], 
-        competitions, 
-        "competitions"
-    )
+########################################################
+# FLASK APP FACTORY & INITIALIZATION
+########################################################
 
 def create_app():
     """Create and configure the Flask application"""
@@ -40,57 +28,57 @@ def create_app():
     app.secret_key = app.config["SECRET_KEY"]
     return app
 
-def dict_from_list(key, value, list_of_dicts):
-    return [item for item in list_of_dicts if item[key] == value][0]
-
 app = create_app()
 
-clubs = load_json(app.config["JSON_CLUBS"], "clubs")
-competitions = load_json(app.config["JSON_COMPETITIONS"], "competitions")
+
+########################################################
+# FLASK ROUTES
+########################################################
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/show_summary",methods=["POST"])
+@app.route("/show_summary", methods=["POST"])
 def show_summary():    
-    club = dict_from_list("email", request.form["email"], clubs)
-    return render_template("welcome.html",club=club,competitions=competitions)
+    club = get_obj_by_field("email", request.form["email"], CLUBS)
+    return render_template("welcome.html", 
+                            club=club, 
+                            competitions=COMPETITIONS)
 
 
 @app.route("/book/<competition>/<club>")
-def book(competition, club):
-    found_club = dict_from_list("name", club, clubs)
-    found_competition = dict_from_list("name", competition, competitions)
-    if found_club and found_competition:
+def book(competition_name, club_name):
+    club = get_obj_by_field("name", club_name, CLUBS)
+    competition = get_obj_by_field("name", 
+                                    competition_name, 
+                                    COMPETITIONS)
+    if club and competition:
         return render_template(
             "booking.html",
-            club=found_club,
-            competition=found_competition
+            club=club,
+            competition=competition
         )
     else:
         flash("Something went wrong-please try again")
         return render_template(
             "welcome.html", 
             club=club, 
-            competitions=competitions
+            competitions=COMPETITIONS
         )
 
-@app.route("/purchase_places",methods=["POST"])
+@app.route("/purchase_places", methods=["POST"])
 def purchase_places():
-    current_competitions = load_json(
-        current_app.config["JSON_COMPETITIONS"], 
-        "competitions"
-    )
-    current_clubs = load_json(current_app.config["JSON_CLUBS"], "clubs")
-    
-    competition = dict_from_list("name", request.form["competition"], current_competitions)
-    club = dict_from_list("name", request.form["club"], current_clubs)
 
+    competition = get_obj_by_field("name", 
+                                    request.form["competition"], 
+                                    COMPETITIONS)
+    club = get_obj_by_field("name", request.form["club"], CLUBS)
     places_required = int(request.form["places"])
-    reservation_error = validate_places_required(places_required, club, competition)
-    date_error = validate_competition_date(competition)
-    error = reservation_error or date_error
+    
+    error = process_data_persistance_during_booking(competition, 
+                                                    club, 
+                                                    places_required)
     if error:
         flash(error)
         return render_template(
@@ -98,25 +86,19 @@ def purchase_places():
             club=club,
             competition=competition
         )
-    
-
-    competition["number_of_places"] = int(competition["number_of_places"]) \
-        - places_required
-    club["points"] = int(club["points"]) - places_required
-
-    
-    save_clubs_and_competitions(
-        current_app, 
-        current_clubs, 
-        current_competitions
-    )
-    flash("Great-booking complete!")
-    return render_template("welcome.html", club=club, competitions=current_competitions)
+    else:
+        flash("Great-booking complete!")
+        return render_template("welcome.html", 
+                                club=club, 
+                                competitions=COMPETITIONS)
 
 @app.route("/display_points")
 def display_points():
     """Display the points of the clubs from the main page"""
-    return render_template("points.html", clubs=clubs)
+    if not CLUBS:
+        flash("No clubs found")
+        return render_template("welcome.html")
+    return render_template("points.html", clubs=CLUBS)
 
 @app.route("/logout")
 def logout():
