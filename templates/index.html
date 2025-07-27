@@ -4,10 +4,10 @@
     <h1>Welcome to the GUDLFT Registration Portal!</h1>
     {{ display_message() }}
     Please enter your secretary email to continue:
-    <form action="showSummary" method="post">
+    <form action="/show_summary" method="post">
         <label for="email">Email:</label>
         <input type="email" name="email" id=""/>
         <button type="submit">Enter</button>
     </form>
-    <a href="/displayPoints">Display Clubs Points</a>
+    <a href="/display_points">Display Clubs Points</a>
 {% endblock %}

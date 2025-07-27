@@ -8,6 +8,11 @@ import server
 from server import app
 from config import Config
 from validators import validate_places_required
+from data_manager import (
+    load_data,
+    save_json,
+    get_obj_by_field,
+)
 
 
 clubs_data = [
@@ -18,11 +23,11 @@ clubs_data = [
 competitions_data = [
     {"name": "Spring Festival", 
     "date": "2026-03-27 10:00:00", 
-    "numberOfPlaces": 25,
+    "number_of_places": 25,
     "status": "upcoming"},
     {"name": "Fall Classic", 
     "date": "2026-10-22 13:30:00", 
-    "numberOfPlaces": 13,
+    "number_of_places": 13,
     "status": "upcoming"}
 ]
 
@@ -36,11 +41,11 @@ class MockDataManager:
         """Reset data to initial state"""
         self.stored_clubs = deepcopy(clubs_data)
         self.stored_competitions = deepcopy(competitions_data)
-        server.clubs = deepcopy(self.stored_clubs)
-        server.competitions = deepcopy(self.stored_competitions)
+        CLUBS = deepcopy(self.stored_clubs)
+        COMPETITIONS = deepcopy(self.stored_competitions)
     
-    def load_json(self, file_path, key=None):
-        """Mock load_json function that returns current state"""
+    def load_data(self, file_path, key=None):
+        """Mock load_data function that returns current state"""
         if key == "clubs":
             return self.stored_clubs
         if key == "competitions":
@@ -51,10 +56,10 @@ class MockDataManager:
         """Mock save_json function that updates internal state"""
         if key == "clubs":
             self.stored_clubs = data
-            server.clubs = data
+            CLUBS = data
         elif key == "competitions":
             self.stored_competitions = data
-            server.competitions = data
+            COMPETITIONS = data
     
     def get_club_by_name(self, name):
         """Get a club by name from stored data"""
@@ -89,8 +94,8 @@ def mock_data_manager():
 @pytest.fixture
 def mock_json_functions(mock_data_manager):
     """Mock JSON functions fixture with proper patching"""
-    with patch('server.load_json', side_effect=mock_data_manager.load_json), \
-         patch('server.save_json', side_effect=mock_data_manager.save_json):
+    with patch('data_manager.load_data', side_effect=mock_data_manager.load_data), \
+         patch('data_manager.save_json', side_effect=mock_data_manager.save_json):
         mock_data_manager.reset_data()
         yield mock_data_manager
 
@@ -100,7 +105,7 @@ test_app):
     """Test that clubs cannot book more places than available"""
     with test_app.test_client() as client:
         response = client.post(
-            "/purchasePlaces",
+            "/purchase_places",
             data={
                 "club": "Simply Lift", 
                 "competition": "Spring Festival", 
@@ -117,11 +122,11 @@ def test_club_points_updated_after_purchase(test_app, mock_json_functions):
     initial_points = mock_json_functions.get_club_by_name(
         "Simply Lift")["points"]
     initial_places = mock_json_functions.get_competition_by_name(
-        "Spring Festival")["numberOfPlaces"]
+        "Spring Festival")["number_of_places"]
     
     with test_app.test_client() as client:
         response = client.post(
-            "/purchasePlaces",
+            "/purchase_places",
             data={
                 "club": "Simply Lift",
                 "competition": "Spring Festival",
@@ -134,14 +139,14 @@ def test_club_points_updated_after_purchase(test_app, mock_json_functions):
         "Spring Festival")
 
     assert int(updated_club["points"]) == int(initial_points) - 1
-    assert int(updated_competition["numberOfPlaces"]) == int(initial_places) - 1
+    assert int(updated_competition["number_of_places"]) == int(initial_places) - 1
 
 
 def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
     """Test that clubs cannot book past competitions"""
     with test_app.test_client() as client:
         response = client.post(
-            "/purchasePlaces",
+            "/purchase_places",
             data={
                 "club": "Simply Lift",
                 "competition": "Fall Classic",
@@ -154,34 +159,34 @@ def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
         else:
             assert response.status_code == 200
 
-
+  
 def test_validation_rules():
     """Test validation rules separately"""    
     result = validate_places_required(
         26, 
         {"points": 21}, 
-        {"numberOfPlaces": 19}
+        {"number_of_places": 19}
     )
     assert result == "Not enough places available"
     
     result = validate_places_required(
         25, 
         {"points": 21}, 
-        {"numberOfPlaces": 30}
+        {"number_of_places": 30}
     )
     assert result == "The club does not have enough points"
     
     result = validate_places_required(
         15, 
         {"points": 20}, 
-        {"numberOfPlaces": 20}
+        {"number_of_places": 20}
     )
     assert result == "You cannot book more than 12 places"
     
     result = validate_places_required(
         5, 
         {"points": 10}, 
-        {"numberOfPlaces": 10}
+        {"number_of_places": 10}
     )
     assert result is None
 
@@ -189,25 +194,25 @@ def test_validation_rules():
 def test_display_points(test_app):
     """Test that the display points page is rendered"""
     with test_app.test_client() as client:
-        response = client.get("/displayPoints")
+        response = client.get("/display_points")
         assert response.status_code == 200
         assert "Points" in response.data.decode("utf-8")
 
 
 def test_display_points_with_no_clubs(test_app, mock_json_functions):
     """Test that the display points page is rendered with no clubs"""
-    def empty_clubs_load_json(file_path, key=None):
+    def empty_clubs_load_data(file_path, key=None):
         if key == "clubs":
             return []
         if key == "competitions":
             return mock_json_functions.stored_competitions
         return []
     
-    with patch('server.load_json', side_effect=empty_clubs_load_json):
-        server.clubs = []
+    with patch('data_manager.load_data', side_effect=empty_clubs_load_data):
+        CLUBS = []
         
         with test_app.test_client() as client:
-            response = client.get("/displayPoints")
+            response = client.get("/display_points")
             assert "No clubs found" in response.data.decode("utf-8")
 
 

@@ -1,37 +1,25 @@
-import json
-import os
+
 from flask import (
     Flask, 
     render_template, 
     request,
     redirect, 
     flash, 
-    url_for, 
-    current_app
+    url_for
 )
 
 from config import config
-from validators import validate_places_required, validate_competition_date, mail_is_unknown
+from data_manager import (
+    get_obj_by_field, 
+    update_data_after_booking,
+    CLUBS,
+    COMPETITIONS
+)
 
 
-def load_json(file_path, key):
-    """Load JSON data from a club or competition file"""
-    with open(file_path) as f:
-        return json.load(f)[key]
-
-def save_json(file_path, data, key):
-    """Save JSON data to a club or competition file"""
-    with open(file_path, "w") as f:
-        json.dump({key: data}, f, ensure_ascii=True, indent=4)
-
-def save_clubs_and_competitions(app_instance, clubs, competitions):
-    """Save clubs and competitions to their respective files"""
-    save_json(app_instance.config["JSON_CLUBS"], clubs, "clubs")
-    save_json(
-        app_instance.config["JSON_COMPETITIONS"], 
-        competitions, 
-        "competitions"
-    )
+########################################################
+# FLASK APP FACTORY & INITIALIZATION
+########################################################
 
 def create_app():
     """Create and configure the Flask application"""
@@ -40,64 +28,66 @@ def create_app():
     app.secret_key = app.config["SECRET_KEY"]
     return app
 
-
 app = create_app()
 
-clubs = load_json(app.config["JSON_CLUBS"], "clubs")
-competitions = load_json(app.config["JSON_COMPETITIONS"], "competitions")
+
+########################################################
+# FLASK ROUTES
+########################################################
 
 @app.route("/")
 def index():
+    """Display the main page"""
     return render_template("index.html")
 
-@app.route("/showSummary",methods=["POST"])
-def showSummary():
-    email = request.form["email"]
-    if mail_is_unknown(email, clubs):
-        flash("Unknown email")
-        return redirect(url_for("index"))
 
-    club = [
-        club for club in clubs if club["email"] == email
-    ][0]
-    return render_template("welcome.html",club=club,competitions=competitions)
+@app.route("/show_summary", methods=["POST"])
+def show_summary():    
+    """
+    Display the welcome page with the club's information
+    and the competitions list.
+    """
+    club = get_obj_by_field("email", request.form["email"], CLUBS)
+    return render_template("welcome.html", 
+                            club=club, 
+                            competitions=COMPETITIONS)
 
 
 @app.route("/book/<competition>/<club>")
-def book(competition, club):
-    foundClub = [c for c in clubs if c["name"] == club][0]
-    foundCompetition = [
-        c for c in competitions if c["name"] == competition
-    ][0]
-    if foundClub and foundCompetition:
+def book(competition_name, club_name):
+    """Display the booking page"""
+    club = get_obj_by_field("name", club_name, CLUBS)
+    competition = get_obj_by_field("name", 
+                                    competition_name, 
+                                    COMPETITIONS)
+    if club and competition:
         return render_template(
             "booking.html",
-            club=foundClub,
-            competition=foundCompetition
+            club=club,
+            competition=competition
         )
     else:
         flash("Something went wrong-please try again")
         return render_template(
             "welcome.html", 
             club=club, 
-            competitions=competitions
+            competitions=COMPETITIONS
         )
 
-@app.route("/purchasePlaces",methods=["POST"])
-def purchasePlaces():
-    current_competitions = load_json(
-        current_app.config["JSON_COMPETITIONS"], 
-        "competitions"
-    )
-    current_clubs = load_json(current_app.config["JSON_CLUBS"], "clubs")
-    
-    competition = [c for c in current_competitions if c["name"] == request.form["competition"]][0]
-    club = [c for c in current_clubs if c["name"] == request.form["club"]][0]
 
-    placesRequired = int(request.form["places"])
-    reservation_error = validate_places_required(placesRequired, club, competition)
-    date_error = validate_competition_date(competition)
-    error = reservation_error or date_error
+@app.route("/purchase_places", methods=["POST"])
+def purchase_places():
+    """
+    Display and process the booking of places for a 
+    competition by a club.
+    """
+    competition = get_obj_by_field("name", 
+                                    request.form["competition"], 
+                                    COMPETITIONS)
+    club = get_obj_by_field("name", request.form["club"], CLUBS)
+    places_required = int(request.form["places"])
+    
+    error = update_data_after_booking(competition, club, places_required)
     if error:
         flash(error)
         return render_template(
@@ -105,29 +95,27 @@ def purchasePlaces():
             club=club,
             competition=competition
         )
-    
+    else:
+        flash("Great-booking complete!")
+        return render_template("welcome.html", 
+                                club=club, 
+                                competitions=COMPETITIONS)
 
-    competition["numberOfPlaces"] = int(competition["numberOfPlaces"]) \
-        - placesRequired
-    club["points"] = int(club["points"]) - placesRequired
 
-    
-    save_clubs_and_competitions(
-        current_app, 
-        current_clubs, 
-        current_competitions
-    )
-    flash("Great-booking complete!")
-    return render_template("welcome.html", club=club, competitions=current_competitions)
-
-@app.route("/displayPoints")
-def displayPoints():
+@app.route("/display_points")
+def display_points():
     """Display the points of the clubs from the main page"""
-    return render_template("points.html", clubs=clubs)
+    if not CLUBS:
+        flash("No clubs found")
+        return render_template("welcome.html")
+    return render_template("points.html", clubs=CLUBS)
+
 
 @app.route("/logout")
 def logout():
+    """Redirect to the main page"""
     return redirect(url_for("index"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
