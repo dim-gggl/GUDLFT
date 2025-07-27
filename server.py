@@ -11,7 +11,7 @@ from flask import (
 from config import config
 from data_manager import (
     get_obj_by_field, 
-    process_data_persistance_during_booking,
+    update_data_after_booking,
     CLUBS,
     COMPETITIONS
 )
@@ -37,10 +37,16 @@ app = create_app()
 
 @app.route("/")
 def index():
+    """Display the main page"""
     return render_template("index.html")
+
 
 @app.route("/show_summary", methods=["POST"])
 def show_summary():    
+    """
+    Display the welcome page with the club's information
+    and the competitions list.
+    """
     club = get_obj_by_field("email", request.form["email"], CLUBS)
     return render_template("welcome.html", 
                             club=club, 
@@ -49,6 +55,7 @@ def show_summary():
 
 @app.route("/book/<competition>/<club>")
 def book(competition_name, club_name):
+    """Display the booking page"""
     club = get_obj_by_field("name", club_name, CLUBS)
     competition = get_obj_by_field("name", 
                                     competition_name, 
@@ -67,18 +74,20 @@ def book(competition_name, club_name):
             competitions=COMPETITIONS
         )
 
+
 @app.route("/purchase_places", methods=["POST"])
 def purchase_places():
-
+    """
+    Display and process the booking of places for a 
+    competition by a club.
+    """
     competition = get_obj_by_field("name", 
                                     request.form["competition"], 
                                     COMPETITIONS)
     club = get_obj_by_field("name", request.form["club"], CLUBS)
     places_required = int(request.form["places"])
     
-    error = process_data_persistance_during_booking(competition, 
-                                                    club, 
-                                                    places_required)
+    error = update_data_after_booking(competition, club, places_required)
     if error:
         flash(error)
         return render_template(
@@ -92,6 +101,7 @@ def purchase_places():
                                 club=club, 
                                 competitions=COMPETITIONS)
 
+
 @app.route("/display_points")
 def display_points():
     """Display the points of the clubs from the main page"""
@@ -100,9 +110,12 @@ def display_points():
         return render_template("welcome.html")
     return render_template("points.html", clubs=CLUBS)
 
+
 @app.route("/logout")
 def logout():
+    """Redirect to the main page"""
     return redirect(url_for("index"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
