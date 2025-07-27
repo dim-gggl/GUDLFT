@@ -47,11 +47,14 @@ def show_summary():
     Display the welcome page with the club's information
     and the competitions list.
     """
-    club = get_obj_by_field("email", request.form["email"], CLUBS)
-    return render_template("welcome.html", 
-                            club=club, 
-                            competitions=COMPETITIONS)
-
+    try:
+        club = get_obj_by_field("email", request.form["email"], CLUBS)
+        return render_template("welcome.html", 
+                                club=club, 
+                                competitions=COMPETITIONS)
+    except IndexError:
+        flash("Unknown email")
+        return redirect(url_for("index"))
 
 @app.route("/book/<competition>/<club>")
 def book(competition_name, club_name):
@@ -105,9 +108,6 @@ def purchase_places():
 @app.route("/display_points")
 def display_points():
     """Display the points of the clubs from the main page"""
-    if not CLUBS:
-        flash("No clubs found")
-        return render_template("welcome.html")
     return render_template("points.html", clubs=CLUBS)
 
 
