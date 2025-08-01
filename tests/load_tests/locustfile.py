@@ -92,7 +92,7 @@ class LoadTestConfig:
     @staticmethod
     def get_test_emails():
         """Returns the tests configurations"""
-        return [
+        return {
             "normal_load": {
                 "users": 10,
                 "spawn_rate": 2,
@@ -108,4 +108,4 @@ class LoadTestConfig:
                 "spawn_rate": 10,
                 "run_time": "10m"
             }
-        ]
+        }
