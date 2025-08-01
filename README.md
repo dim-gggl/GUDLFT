@@ -1,51 +1,325 @@
-# gudlift-registration
+# <div align="center"> 🇬🇧 GUDLFT <br> *Competition registration portal*
 
-1. Why
+GUDLFT is a **Flask** application that enables climbing clubs to
+reserve places for competitions while managing their points capital.
+This project is part of the OpenClassrooms *Python Developer* course
+and focuses on **code quality**: 
+- **AUTOMATED TESTING**
+- **REFACTORING**
+- **GOOD PRACTICES**
+- **VERSION CONTROL**
+- **TEST COVERAGE**
+
+---
+
+## Contents
+1. [Features](#features)
+2. [Business rules](#business-rules)
+3. [Installation](#installation)
+4. [Application launch](#lancement-de-lappication)
+5. [Test execution](#test-execution)
+6. [Project structure](#project-structure)
+7. [Contribute](#contribute)
+8. [License](#licence)
+
+---
+
+## Features
+
+What the application does:
+
+- Easy access connection to the app via e-mail address.
+- A view of upcoming competitions.
+- A platform to reserve places according to the number of points available.
+- A real-time display of remaining points by club.
+- Data management via two JSON files: `clubs.json` and `competitions.json`.
+
+---
+
+## Business rules
+
+| **RULE** | **DETAIL** |
+| --- | --- | 
+| **Places limit** | A club may not reserve more than 12 places in any one competition. |
+| **Places availability** | The reservation cannot exceed the number of places remaining for the competition. |
+| **Points requirement** | The club must have **at least** as many points as the number of places requested.
+| **Past competitions** | It is not possible to book a competition that has already passed. |
+
+    These rules are centralized in `validators.py` and covered by unit and functional tests.
+
+---
+
+## Setup
+
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/dim-gggl/GUDLFT.git
+   cd GUDLFT
+   ```
+2. **Create a virtual environment** (recommended)
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate # under macOS/Linux
+   venv\Scripts\activate # under Windows
+   ```
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+---
+
+## Launch application
+
+```bash
+python server.py
+```
+
+By default, the application listens on `http://localhost:5000`.  
+The following environment variables can be overridden:
+
+| Variable | Default value | Description |
+|:-:|:-:|:-:|
+| `SECRET_KEY` | `something_special` | Flask secret key |
+| `FLASK_DEBUG` | `1` | Enable hot reload and debugging |
+| `FLASK_RUN_PORT` | `5000` | Listening port |
+
+---
+
+## Test execution
+
+The test suite is written with **pytest** :
+
+```bash
+pytest # run all tests
+pytest -q # silent mode
+coverage run -m pytest # adds a coverage report
+coverage html # generates an HTML report
+```
+
+- **Unit tests**: business logic (`tests/unit_tests/`).
+- **Functional testing**: user scenarios via Flask client (`tests/functional_tests/`).
+- **Integration tests**: files ready for future tests (`tests/integration_tests/`).
+
+The HTML coverage report is generated in `htmlcov/` and can be opened
+with any browser.
+
+---
+
+## Load testing
+
+```bash
+########################################################
+#                   IN PROGRESS                        
+########################################################
+```
 
 
-    This is a proof of concept (POC) project to show a light-weight version of our competition booking platform. The aim is the keep things as light as possible, and use feedback from the users to iterate.
+---
 
-2. Getting Started
+## Project structure
 
-    This project uses the following technologies:
+```bash
+GUDLFT/
+├── __init__.py
+├── clubs.json
+├── competitions.json
+├── config.py
+├── data_manager.py
+├── htmlcov/                     # Rapport de couverture de tests
+├── pytest.ini
+├── README.md
+├── requirements.txt
+├── server.py
+├── static/
+│   └── style.css               # Feuille de style globale
+├── templates/
+│   ├── base.html               # Gabarit principal
+│   ├── booking.html
+│   ├── index.html
+│   ├── points.html
+│   ├── welcome.html
+│   └── macros/
+│       └── display_message.html
+├── test_runner.py
+├── tests/
+│   ├── functional_tests/
+│   │   ├── __init_.py
+│   │   ├── conftest.py
+│   │   ├── test_authentication.py
+│   │   ├── test_points_display.py
+│   │   └── test_reservations.py
+│   ├── integration_tests/
+│   └── unit_tests/
+│       ├── __init__.py
+│       ├── test_config.py
+│       ├── test_data_manager.py
+│       ├── test_server.py
+│       └── test_validators.py
+└── validators.py
+```
+---
 
-    * Python v3.x+
+# <div align="center"> 🇫🇷 GUDLFT <br> *Portail d’inscription aux compétitions*
 
-    * [Flask](https://flask.palletsprojects.com/en/1.1.x/)
+GUDLFT est une application **Flask** qui permet aux clubs d’escalade de
+réserver des places pour des compétitions tout en gérant leur capital de
+points.  
+Ce projet s’inscrit dans le cadre du parcours *Tests en Python* d’OpenClassrooms
+et met l’accent sur la **qualité du code** : 
+- **TESTS AUTOMATISÉS**
+- **REFACTORING**
+- **BONNES PRATIQUES**
+- **VERSION CONTROL**
+- **COUVERTURE DE CODE**
 
-        Whereas Django does a lot of things for us out of the box, Flask allows us to add only what we need. 
-     
+---
 
-    * [Virtual environment](https://virtualenv.pypa.io/en/stable/installation.html)
+## Sommaire
+1. [Fonctionnalités](#fonctionnalités)
+2. [Règles métier](#règles-métier)
+3. [Installation](#installation)
+4. [Lancement de l’application](#lancement-de-lapplication)
+5. [Exécution des tests](#exécution-des-tests)
+6. [Structure du projet](#structure-du-projet)
+7. [Contribuer](#contribuer)
+8. [Licence](#licence)
 
-        This ensures you'll be able to install the correct packages without interfering with Python on your machine.
+---
 
-        Before you begin, please ensure you have this installed globally. 
+## Fonctionnalités
 
+Ce que permet l'application :
 
-3. Installation
+- Connexion rapide d’un club par adresse e-mail.
+- Visualisation des compétitions à venir.
+- Réservation de places selon le nombre de points disponibles.
+- Affichage en temps réel des points restants par club.
+- Gestion des données via deux fichiers JSON :  
+  `clubs.json` et `competitions.json`.
 
-    - After cloning, change into the directory and type <code>virtualenv .</code>. This will then set up a a virtual python environment within that directory.
+---
 
-    - Next, type <code>source bin/activate</code>. You should see that your command prompt has changed to the name of the folder. This means that you can install packages in here without affecting affecting files outside. To deactivate, type <code>deactivate</code>
+## Règles métier
 
-    - Rather than hunting around for the packages you need, you can install in one step. Type <code>pip install -r requirements.txt</code>. This will install all the packages listed in the respective file. If you install a package, make sure others know by updating the requirements.txt file. An easy way to do this is <code>pip freeze > requirements.txt</code>
+| **RÈGLE** | **DÉTAIL** |
+|-------|--------|
+| **Limite de places** | Un club ne peut pas réserver **plus de 12 places** sur une même compétition. |
+| **Places disponibles** | La réservation ne peut pas dépasser le nombre de places restantes pour la compétition. |
+| **Points du club** | Le club doit posséder **au moins** autant de points que de places demandées. |
+| **Compétitions passées** | Il est impossible de réserver une compétition déjà passée dans le temps. |
 
-    - Flask requires that you set an environmental variable to the python file. However you do that, you'll want to set the file to be <code>server.py</code>. Check [here](https://flask.palletsprojects.com/en/1.1.x/quickstart/#a-minimal-application) for more details
+Ces règles sont centralisées dans `validators.py` et couvertes par des tests
+unitaires et fonctionnels.
 
-    - You should now be ready to test the application. In the directory, type either <code>flask run</code> or <code>python -m flask run</code>. The app should respond with an address you should be able to go to using your browser.
+---
 
-4. Current Setup
+## Installation
 
-    The app is powered by [JSON files](https://www.tutorialspoint.com/json/json_quick_guide.htm). This is to get around having a DB until we actually need one. The main ones are:
-     
-    * competitions.json - list of competitions
-    * clubs.json - list of clubs with relevant information. You can look here to see what email addresses the app will accept for login.
+1. **Cloner le dépôt**  
+   ```bash
+   git clone https://github.com/dim-gggl/GUDLFT.git
+   cd GUDLFT
+   ```
+2. **Créer un environnement virtuel** (optionnel mais recommandé)  
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate   # sous macOS/Linux
+   venv\Scripts\activate      # sous Windows
+   ```
+3. **Installer les dépendances**  
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
 
-5. Testing
+---
 
-    You are free to use whatever testing framework you like-the main thing is that you can show what tests you are using.
+## Lancement de l’application
 
-    We also like to show how well we're testing, so there's a module called 
-    [coverage](https://coverage.readthedocs.io/en/coverage-5.1/) you should add to your project.
+```bash
+python server.py
+```
 
+Par défaut, l’application écoute sur `http://localhost:5000`.  
+Les variables d’environnement suivantes peuvent être surchargées :
+
+| Variable | Valeur par défaut | Description |
+|:-:|:-:|:-:|
+| `SECRET_KEY` | `something_special` | Clé secrète Flask |
+| `FLASK_DEBUG` | `1` | Active le rechargement à chaud et le debug |
+| `FLASK_RUN_PORT` | `5000` | Port d’écoute |
+
+---
+
+## Exécution des tests
+
+La suite de tests est écrite avec **pytest** :
+
+```bash
+pytest          # lance tous les tests
+pytest -q       # mode silencieux
+coverage run -m pytest # ajoute un rapport de couverture
+coverage html # génère un rapport HTML
+```
+
+- **Tests unitaires** : logique métier (`tests/unit_tests/`).
+- **Tests fonctionnels** : scénarios utilisateur via le client Flask (`tests/functional_tests/`).
+- **Tests d’intégration** : dossiers prêts pour accueillir vos futurs tests (`tests/integration_tests/`).
+
+Le rapport HTML de couverture est généré dans `htmlcov/` et peut être ouvert
+avec n’importe quel navigateur.
+
+---
+
+## Load testing
+
+```bash
+########################################################
+#                   IN PROGRESS                        
+########################################################
+```
+
+---
+
+## Structure du projet
+
+```bash
+GUDLFT/
+├── __init__.py
+├── clubs.json
+├── competitions.json
+├── config.py
+├── data_manager.py
+├── htmlcov/                     # Rapport de couverture de tests
+├── pytest.ini
+├── README.md
+├── requirements.txt
+├── server.py
+├── static/
+│   └── style.css               # Feuille de style globale
+├── templates/
+│   ├── base.html               # Gabarit principal
+│   ├── booking.html
+│   ├── index.html
+│   ├── points.html
+│   ├── welcome.html
+│   └── macros/
+│       └── display_message.html
+├── test_runner.py
+├── tests/
+│   ├── functional_tests/
+│   │   ├── __init_.py
+│   │   ├── conftest.py
+│   │   ├── test_authentication.py
+│   │   ├── test_points_display.py
+│   │   └── test_reservations.py
+│   ├── integration_tests/
+│   └── unit_tests/
+│       ├── __init__.py
+│       ├── test_config.py
+│       ├── test_data_manager.py
+│       ├── test_server.py
+│       └── test_validators.py
+└── validators.py
+```
