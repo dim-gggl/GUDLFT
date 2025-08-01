@@ -1,4 +1,3 @@
-
 from flask import (
     Flask, 
     render_template, 
@@ -48,35 +47,43 @@ def show_summary():
     and the competitions list.
     """
     try:
-        club = get_obj_by_field("email", request.form["email"], CLUBS)
+        email = request.form.get("email")
+        if not email:
+            flash("Email is required")
+            return redirect(url_for("index"))
+            
+        club = get_obj_by_field("email", email, CLUBS)
         return render_template("welcome.html", 
                                 club=club, 
                                 competitions=COMPETITIONS)
-    except IndexError:
+    except (IndexError, KeyError):
         flash("Unknown email")
         return redirect(url_for("index"))
 
 
-@app.route("/book/<competition>/<club>")
+@app.route("/book/<competition_name>/<club_name>")
 def book(competition_name, club_name):
     """Display the booking page"""
-    club = get_obj_by_field("name", club_name, CLUBS)
-    competition = get_obj_by_field("name", 
-                                    competition_name, 
-                                    COMPETITIONS)
-    if club and competition:
-        return render_template(
-            "booking.html",
-            club=club,
-            competition=competition
-        )
-    else:
-        flash("Something went wrong-please try again")
-        return render_template(
-            "welcome.html", 
-            club=club, 
-            competitions=COMPETITIONS
-        )
+    try:
+        club = get_obj_by_field("name", club_name, CLUBS)
+        competition = get_obj_by_field("name", competition_name, COMPETITIONS)
+        
+        if club and competition:
+            return render_template(
+                "booking.html",
+                club=club,
+                competition=competition
+            )
+        else:
+            flash("Something went wrong-please try again")
+            return render_template(
+                "welcome.html", 
+                club=club, 
+                competitions=COMPETITIONS
+            )
+    except IndexError:
+        flash("Invalid competition or club")
+        return redirect(url_for("index"))
 
 
 @app.route("/purchase_places", methods=["POST"])
@@ -85,25 +92,35 @@ def purchase_places():
     Display and process the booking of places for a 
     competition by a club.
     """
-    competition = get_obj_by_field("name", 
-                                    request.form["competition"], 
-                                    COMPETITIONS)
-    club = get_obj_by_field("name", request.form["club"], CLUBS)
-    places_required = int(request.form["places"])
-    
-    error = update_data_after_booking(competition, club, places_required)
-    if error:
-        flash(error)
-        return render_template(
-            "booking.html",
-            club=club,
-            competition=competition
-        )
-    else:
-        flash("Great-booking complete!")
-        return render_template("welcome.html", 
-                                club=club, 
-                                competitions=COMPETITIONS)
+    try:
+        competition_name = request.form.get("competition")
+        club_name = request.form.get("club")
+        places_str = request.form.get("places")
+        
+        if not all([competition_name, club_name, places_str]):
+            flash("Missing required data")
+            return redirect(url_for("index"))
+            
+        competition = get_obj_by_field("name", competition_name, COMPETITIONS)
+        club = get_obj_by_field("name", club_name, CLUBS)
+        places_required = int(places_str)
+        
+        error = update_data_after_booking(competition, club, places_required)
+        if error:
+            flash(error)
+            return render_template(
+                "booking.html",
+                club=club,
+                competition=competition
+            )
+        else:
+            flash("Great-booking complete!")
+            return render_template("welcome.html", 
+                                    club=club, 
+                                    competitions=COMPETITIONS)
+    except (ValueError, IndexError, KeyError):
+        flash("Invalid data provided")
+        return redirect(url_for("index"))
 
 
 @app.route("/display_points")

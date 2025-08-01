@@ -20,18 +20,18 @@ COMPETITIONS = load_data("competitions.json", "competitions")
 def save_json(file_path: str, data: list, key: str):
     """Save JSON data to a club or competition file"""
     with open(file_path, "w") as f:
-        json_data = json.dumps({key: data}, ensure_ascii=True, indent=4)
-        f.write(json_data)
+        json.dump({key: data}, f, ensure_ascii=True, indent=4)
+    
 
 
 def update_clubs_and_competitions(club: dict, competition: dict):
     """Update clubs and competitions lists after booking"""
+    global CLUBS, COMPETITIONS
     clubs = [c for c in CLUBS if c["name"] != club["name"]]
     clubs.append(club)
-    competitions = [
-        comp for comp in COMPETITIONS if comp["name"] != competition["name"]
-    ]
+    competitions = [comp for comp in COMPETITIONS if comp["name"] != competition["name"]]
     competitions.append(competition)
+    COMPETITIONS = competitions
 
 
 def save_clubs_and_competitions(app_instance: Flask, 
@@ -63,14 +63,16 @@ def update_data_after_booking(competition: dict,
     club["points"] = int(club["points"]) - places_required
     # If, for any reason, the booking is not possible,
     # we get the error message and return it to the view.
-    reservation_error = validate_places_required(
-        places_required, club, competition
-    )
+    reservation_error = validate_places_required(places_required, club, competition)
     date_error = validate_competition_date(competition)
     if reservation_error or date_error:
         return reservation_error or date_error
-    # If the booking is possible, we update the in-memory data
-    # and save it to the files.
+    
+    # If the booking is possible, update the data
+    competition["number_of_places"] = int(competition["number_of_places"]) - places_required
+    club["points"] = int(club["points"]) - places_required
+    
+    # Update the in-memory data and save it to the files.
     update_clubs_and_competitions(club, competition)
     save_clubs_and_competitions(current_app, CLUBS, COMPETITIONS)
     return None

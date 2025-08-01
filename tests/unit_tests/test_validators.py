@@ -3,9 +3,11 @@ from datetime import datetime, timedelta
 
 from validators import validate_competition_date, validate_places_required
 
+
 ########################################################
-# VALIDATE PLACES REQUIRED TESTS
+#           VALIDATE PLACES REQUIRED TESTS
 ########################################################
+
 
 def test_valid_booking():
     """
@@ -73,9 +75,11 @@ def test_negative_places():
     result = validate_places_required(-1, club, competition)
     assert result is None
 
+
 ########################################################
-# VALIDATE COMPETITION DATE TESTS
+#       VALIDATE COMPETITION DATE TESTS
 ########################################################
+
 
 def test_future_competition():
     """

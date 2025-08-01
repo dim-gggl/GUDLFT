@@ -1,15 +1,7 @@
 {% extends "base.html" %}
 {% from "macros/display_message.html" import display_message %}
 {% block content %}
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="flash-messages-container">
-            {% for message in messages %}
-                <li class="flash-message">{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    {{ display_message() }}
     <h2>{{ competition['name'] }}</h2>
     Places available: {{ competition['number_of_places'] }}
     <form action="/purchase_places" method="post">
