@@ -41,8 +41,6 @@ class MockDataManager:
         """Reset data to initial state"""
         self.stored_clubs = deepcopy(clubs_data)
         self.stored_competitions = deepcopy(competitions_data)
-        CLUBS = deepcopy(self.stored_clubs)
-        COMPETITIONS = deepcopy(self.stored_competitions)
     
     def load_data(self, file_path, key=None):
         """Mock load_data function that returns current state"""
@@ -56,10 +54,8 @@ class MockDataManager:
         """Mock save_json function that updates internal state"""
         if key == "clubs":
             self.stored_clubs = data
-            CLUBS = data
         elif key == "competitions":
             self.stored_competitions = data
-            COMPETITIONS = data
     
     def get_club_by_name(self, name):
         """Get a club by name from stored data"""
@@ -95,13 +91,16 @@ def mock_data_manager():
 def mock_json_functions(mock_data_manager):
     """Mock JSON functions fixture with proper patching"""
     with patch('data_manager.load_data', side_effect=mock_data_manager.load_data), \
-         patch('data_manager.save_json', side_effect=mock_data_manager.save_json):
+         patch('data_manager.save_json', side_effect=mock_data_manager.save_json), \
+         patch('server.CLUBS', mock_data_manager.stored_clubs), \
+         patch('server.COMPETITIONS', mock_data_manager.stored_competitions), \
+         patch('data_manager.CLUBS', mock_data_manager.stored_clubs), \
+         patch('data_manager.COMPETITIONS', mock_data_manager.stored_competitions):
         mock_data_manager.reset_data()
         yield mock_data_manager
 
 
-def test_clubs_cannot_book_more_than_places_available(
-test_app):
+def test_clubs_cannot_book_more_than_places_available(test_app, mock_json_functions):
     """Test that clubs cannot book more places than available"""
     with test_app.test_client() as client:
         response = client.post(
@@ -119,30 +118,24 @@ test_app):
 
 def test_club_points_updated_after_purchase(test_app, mock_json_functions):
     """Test that club points are correctly updated after a purchase"""
-    with patch("data_manager.CLUBS", mock_json_functions.stored_clubs), \
-        patch("data_manager.COMPETITIONS", mock_json_functions.stored_competitions):
-        
-        initial_points = mock_json_functions.get_club_by_name(
-            "Simply Lift")["points"]
-        initial_places = mock_json_functions.get_competition_by_name(
-            "Spring Festival")["number_of_places"]
-        
-        with test_app.test_client() as client:
-            response = client.post(
-                "/purchase_places",
-                data={
-                    "club": "Simply Lift",
-                    "competition": "Spring Festival",
-                    "places": "1"
-                }
-            )
-        
-        updated_club = mock_json_functions.get_club_by_name("Simply Lift")
-        updated_competition = mock_json_functions.get_competition_by_name(
-            "Spring Festival")
+    initial_points = mock_json_functions.get_club_by_name("Simply Lift")["points"]
+    initial_places = mock_json_functions.get_competition_by_name("Spring Festival")["number_of_places"]
+    
+    with test_app.test_client() as client:
+        response = client.post(
+            "/purchase_places",
+            data={
+                "club": "Simply Lift",
+                "competition": "Spring Festival",
+                "places": "1"
+            }
+        )
+    
+    updated_club = mock_json_functions.get_club_by_name("Simply Lift")
+    updated_competition = mock_json_functions.get_competition_by_name("Spring Festival")
 
-        assert int(updated_club["points"]) == int(initial_points) - 1
-        assert int(updated_competition["number_of_places"]) == int(initial_places) - 1
+    assert int(updated_club["points"]) == int(initial_points) - 1
+    assert int(updated_competition["number_of_places"]) == int(initial_places) - 1
 
 
 def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
@@ -204,16 +197,7 @@ def test_display_points(test_app):
 
 def test_display_points_with_no_clubs(test_app, mock_json_functions):
     """Test that the display points page is rendered with no clubs"""
-    def empty_clubs_load_data(file_path, key=None):
-        if key == "clubs":
-            return []
-        if key == "competitions":
-            return mock_json_functions.stored_competitions
-        return []
-    
-    with patch('data_manager.load_data', side_effect=empty_clubs_load_data), \
-         patch('data_manager.CLUBS', []):
-        
+    with patch('server.CLUBS', []):
         with test_app.test_client() as client:
             response = client.get("/display_points")
             assert "No clubs found" in response.data.decode("utf-8")
@@ -223,7 +207,7 @@ def test_unknown_email_redirects_to_index(test_app):
     """Test that an unknown email redirects to the index page"""
     with test_app.test_client() as client:
         response = client.post(
-            "/showSummary", 
+            "/show_summary", 
             data={"email": "unknown@example.com"},
             follow_redirects=True
         )
@@ -234,7 +218,7 @@ def test_unknown_email_displays_error_message(test_app):
     """Test that an unknown email displays an error message after redirect"""
     with test_app.test_client() as client:
         response = client.post(
-            "/showSummary", 
+            "/show_summary", 
             data={"email": "unknown@example.com"},
             follow_redirects=True
         )
