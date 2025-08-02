@@ -6,15 +6,15 @@ No function is "mocked" at the validation level: we simply patch
 the disk write to avoid any real write.
 """
 
-from contextlib import ExitStack, contextmanager
 from copy import deepcopy
+from contextlib import ExitStack, contextmanager
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
 
 from data_manager import update_data_after_booking
-from server import app  # Necessary for the Flask context
+from server import app
 
 ########################################################
 #                COMMON FIXTURES
@@ -62,10 +62,27 @@ def _patch_environment(clubs, competitions):
         stack.enter_context(patch("data_manager.save_clubs_and_competitions"))
         yield
 
-
+def _patch_data(club_details, competition_details):
+    clubs = [_generate_club(**club_details)]
+    competitions = [_generate_competition(**competition_details)]
+    return clubs, competitions
 ########################################################
 #               TEST SCENARIOS
 ########################################################
+
+
+def test_login_with_wrong_email(flask_app_context):
+    """Login with wrong email."""
+    clubs, competitions = _patch_data(
+        club_details={"points": 10}, 
+        competition_details={"places": 20, 
+                            "days_delta": 1}
+    )
+    with _patch_environment(clubs, competitions):
+        error = update_data_after_booking(competitions[0], clubs[0], 11)
+    assert error == "The club does not have enough points"
+    assert competitions[0]["number_of_places"] == "20"
+    assert clubs[0]["points"] == "10"
 
 
 def test_booking_success(flask_app_context):
@@ -74,38 +91,39 @@ def test_booking_success(flask_app_context):
     - the club points and the competition places are updated
     - no error is returned
     """
-    clubs = [_generate_club(points=10)]
-    competitions = [_generate_competition(places=20, days_delta=1)]
-
-    club = clubs[0]
-    competition = competitions[0]
+    clubs, competitions = _patch_data(
+        club_details={"points": 10}, 
+        competition_details={"places": 20, 
+                            "days_delta": 1}
+    )
 
     with _patch_environment(clubs, competitions):
         # We book 5 places
-        error = update_data_after_booking(competition, club, 5)
+        error = update_data_after_booking(competitions[0], clubs[0], 5)
 
     # No error expected
     assert error is None
 
     # Check the update in memory
-    assert int(competition["number_of_places"]) == 15
-    assert int(club["points"]) == 5
+    assert int(competitions[0]["number_of_places"]) == 15
+    assert int(clubs[0]["points"]) == 5
 
 
 def test_purchase_places_route_integration(flask_app_context):
     """Complete integration via the Flask route `/purchase_places`."""
-    clubs = [_generate_club(points=20)]
-    competitions = [_generate_competition(places=30, days_delta=2)]
-    club = clubs[0]
-    competition = competitions[0]
+    clubs, competitions = _patch_data(
+        club_details={"points": 20}, 
+        competition_details={"places": 30, 
+                            "days_delta": 2}
+    )
 
     with _patch_environment(clubs, competitions):
         with app.test_client() as client:
             response = client.post(
                 "/purchase_places",
                 data={
-                    "competition": competition["name"],
-                    "club": club["name"],
+                    "competition": competitions[0]["name"],
+                    "club": clubs[0]["name"],
                     "places": "2",
                 },
                 follow_redirects=True,
@@ -115,39 +133,75 @@ def test_purchase_places_route_integration(flask_app_context):
         # The values should be updated
         assert response.status_code == 200
         assert b"Great-booking complete" in response.data
-        assert int(club["points"]) == 18
-        assert int(competition["number_of_places"]) == 28
+        assert int(clubs[0]["points"]) == 18
+        assert int(competitions[0]["number_of_places"]) == 28
 
 
 def test_booking_not_enough_places(flask_app_context):
     """Booking refused because not enough places available."""
-    clubs = [_generate_club(points=30)]
-    competitions = [_generate_competition(places=3, days_delta=1)]
-
-    club = clubs[0]
-    competition = competitions[0]
+    clubs, competitions = _patch_data(
+        club_details={"points": 30}, 
+        competition_details={"places": 3, 
+                            "days_delta": 1}
+    )
 
     with _patch_environment(clubs, competitions):
-        error = update_data_after_booking(competition, club, 5)
+        error = update_data_after_booking(competitions[0], clubs[0], 5)
 
+    # Error expected
     assert error == "Not enough places available"
     # No update should have occurred
-    assert competition["number_of_places"] == "3"
-    assert club["points"] == "30"
+    assert competitions[0]["number_of_places"] == "3"
+    assert clubs[0]["points"] == "30"
+
+
+def test_booking_more_than_12_places(flask_app_context):
+    """Booking refused because more than 12 places are requested."""
+    clubs, competitions = _patch_data(
+        club_details={"points": 30}, 
+        competition_details={"places": 18, 
+                            "days_delta": 1}
+    )
+
+    with _patch_environment(clubs, competitions):
+        error = update_data_after_booking(
+            competitions[0], clubs[0], 13
+        )
+    
+    assert error == "You cannot book more than 12 places"
+    assert competitions[0]["number_of_places"] == "18"
+    assert clubs[0]["points"] == "30"
+
+
+def test_booking_more_places_than_points_available(flask_app_context):
+    """Booking refused because the club has not enough points."""
+    clubs, competitions = _patch_data(
+        club_details={"points": 10}, 
+        competition_details={"places": 20, 
+                            "days_delta": 1}
+    )
+
+    with _patch_environment(clubs, competitions):
+        error = update_data_after_booking(competitions[0], clubs[0], 11)
+
+    assert error == "The club does not have enough points"
+    assert competitions[0]["number_of_places"] == "20"
+    assert clubs[0]["points"] == "10"
 
 
 def test_booking_past_competition(flask_app_context):
     """Booking refused because the competition is in the past."""
-    clubs = [_generate_club(points=15)]
-    competitions = [_generate_competition(places=10, days_delta=-2)]
+    clubs, competitions = _patch_data(
+        club_details={"points": 15}, 
+        competition_details={"places": 10, 
+                            "days_delta": -2}
+    )
 
-    club = clubs[0]
-    competition = competitions[0]
 
     with _patch_environment(clubs, competitions):
-        error = update_data_after_booking(competition, club, 2)
+        error = update_data_after_booking(competitions[0], clubs[0], 2)
 
     assert error == "You cannot book past competitions"
     # No update should have occurred
-    assert competition["number_of_places"] == "10"
-    assert club["points"] == "15"
+    assert competitions[0]["number_of_places"] == "10"
+    assert clubs[0]["points"] == "15"

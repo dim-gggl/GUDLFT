@@ -1,8 +1,8 @@
-import pytest
 from datetime import datetime, timedelta
 
-from validators import validate_competition_date, validate_places_required
+import pytest
 
+from validators import validate_competition_date, validate_places_required
 
 ########################################################
 #           VALIDATE PLACES REQUIRED TESTS
@@ -18,9 +18,10 @@ def test_valid_booking():
     result = validate_places_required(5, club, competition)
     assert result is None
 
+
 def test_more_places_than_available():
     """
-    Test when the number of places required is greater 
+    Test when the number of places required is greater
     than the number of places available.
     """
     club = {"points": "20"}
@@ -28,9 +29,10 @@ def test_more_places_than_available():
     result = validate_places_required(15, club, competition)
     assert result == "Not enough places available"
 
+
 def test_more_places_than_club_points():
     """
-    Test when the number of places required is greater 
+    Test when the number of places required is greater
     than the number of points the club has.
     """
     club = {"points": "5"}
@@ -38,15 +40,17 @@ def test_more_places_than_club_points():
     result = validate_places_required(10, club, competition)
     assert result == "The club does not have enough points"
 
+
 def test_more_than_12_places():
     """
-    Test when the number of places required is greater 
+    Test when the number of places required is greater
     than 12.
     """
     club = {"points": "20"}
     competition = {"number_of_places": "20"}
     result = validate_places_required(13, club, competition)
     assert result == "You cannot book more than 12 places"
+
 
 def test_exactly_12_places():
     """
@@ -57,6 +61,7 @@ def test_exactly_12_places():
     result = validate_places_required(12, club, competition)
     assert result is None
 
+
 def test_zero_places():
     """
     Test when the number of places required is 0.
@@ -65,6 +70,7 @@ def test_zero_places():
     competition = {"number_of_places": "10"}
     result = validate_places_required(0, club, competition)
     assert result is None
+
 
 def test_negative_places():
     """
@@ -90,6 +96,7 @@ def test_future_competition():
     result = validate_competition_date(competition)
     assert result is None
 
+
 def test_past_competition():
     """
     Test when the competition date is in the past.
@@ -98,6 +105,7 @@ def test_past_competition():
     competition = {"date": past_date}
     result = validate_competition_date(competition)
     assert result == "You cannot book past competitions"
+
 
 def test_current_competition():
     """

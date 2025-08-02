@@ -101,7 +101,7 @@ coverage html # generates an HTML report
 - **Functional testing**: user scenarios via Flask client (`tests/functional_tests/`).
 - **Integration tests**: files ready for future tests (`tests/integration_tests/`).
 
-The HTML coverage report is generated in `htmlcov/` and can be opened
+The HTML coverage report is generated in `htmlcov/index.html` and can be opened
 with any browser.
 
 ---
