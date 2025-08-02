@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 79          # Longueur officielle PEP 8
+target-version = ["py38"] # ou ta version de Python
+skip-string-normalization = true  # Conserve les guillemets actuels
+
+[tool.isort]
+profile = "black"
+line_length = 79
+multi_line_output = 3
+include_trailing_comma = true
+float_to_top = true
