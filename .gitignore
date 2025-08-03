@@ -9,4 +9,9 @@ __pycache__
 CACHEDIR.TAG
 .pytest_cache
 pyvenv.cfg
-venv.DS_Store # si la ligne n’y est pas déjà
+venv
+.venv
+.env
+env
+.flake8
+pyproject.toml
