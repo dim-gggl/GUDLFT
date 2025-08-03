@@ -14,6 +14,7 @@ from data_manager import (
     CLUBS,
     COMPETITIONS
 )
+from validators import mail_is_unknown
 
 
 ########################################################
@@ -46,19 +47,16 @@ def show_summary():
     Display the welcome page with the club's information
     and the competitions list.
     """
-    try:
-        email = request.form.get("email")
-        if not email:
-            flash("Email is required")
-            return redirect(url_for("index"))
-            
+    email = request.form.get("email")
+    if mail_is_unknown(email, CLUBS):
+        flash("Please enter a valid email")
+        return redirect(url_for("index"))
+    
+    else:
         club = get_obj_by_field("email", email, CLUBS)
         return render_template("welcome.html", 
                                 club=club, 
                                 competitions=COMPETITIONS)
-    except (IndexError, KeyError):
-        flash("Unknown email")
-        return redirect(url_for("index"))
 
 
 @app.route("/book/<competition_name>/<club_name>")

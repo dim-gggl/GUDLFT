@@ -33,4 +33,4 @@ def test_unknown_email_displays_error_message(test_app):
             data={"email": "unknown@example.com"},
             follow_redirects=True
         )
-        assert "Unknown email" in response.data.decode("utf-8")
+        assert "Please enter a valid email" in response.data.decode("utf-8")

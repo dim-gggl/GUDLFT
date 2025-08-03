@@ -38,4 +38,4 @@ def mail_is_unknown(email, clubs):
     Returns a message if the email is unknown, 
     otherwise returns None.
     """
-    return email not in [club["email"] for club in clubs]
+    return email not in [club["email"] for club in clubs] or email == ""

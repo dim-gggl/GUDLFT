@@ -9,4 +9,4 @@ __pycache__
 CACHEDIR.TAG
 .pytest_cache
 pyvenv.cfg
-venv
+venv.DS_Store # si la ligne n’y est pas déjà
