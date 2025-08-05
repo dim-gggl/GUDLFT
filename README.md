@@ -1,6 +1,6 @@
 # <div align="center"> 🇬🇧 GUDLFT <br> *Competition registration portal*
 
-GUDLFT is a **Flask** application that enables climbing clubs to
+GUDLFT is a **Flask** application that enables powerlifting clubs to
 reserve places for competitions while managing their points capital.
 This project is part of the OpenClassrooms *Python Developer* course
 and focuses on **code quality**: 
@@ -106,13 +106,23 @@ with any browser.
 
 ---
 
-## Load testing
+## Load testing (Locust)
 
+To launch the loading and performance tests, we need to start with a bit of installation:
 ```bash
-########################################################
-#                   IN PROGRESS                        
-########################################################
+export LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # On macOS/Linux
+set LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # On Windows
 ```
+
+Then, we can launch the tests using the command:
+```bash
+locust --config .locust.conf
+```
+
+- You should see a message indicating that the web interface is running at `http://0.0.0.0:8089/`  
+- Open your browser and navigate to this address.
+- The Locust web interface should appear with the fields pre-filled according to the parameters available in the `.locust.conf` file
+- Finally, let yourself be guided through the interface to generate a performance report.
 
 
 ---
@@ -120,38 +130,41 @@ with any browser.
 ## Project structure
 
 ```bash
-GUDLFT/
-├── __init__.py
+GUDLFT
 ├── clubs.json
+├── README.md
 ├── competitions.json
 ├── config.py
 ├── data_manager.py
-├── htmlcov/                     # Rapport de couverture de tests
-├── pytest.ini
-├── README.md
-├── requirements.txt
-├── server.py
-├── static/
-│   └── style.css               # Feuille de style globale
-├── templates/
-│   ├── base.html               # Gabarit principal
+├── htmlcov                  # Coverage Report    
+│   ├── __init___py.html
+│   ├── class_index.html
+│   ├── config_py.html
+│   ├── ... 
+│   ├── ...
+├── server.py                # Entry point to the app
+├── static
+│   └── style.css
+├── templates
+│   ├── base.html
 │   ├── booking.html
 │   ├── index.html
+│   ├── macros
+│   │   └── display_message.html
 │   ├── points.html
-│   ├── welcome.html
-│   └── macros/
-│       └── display_message.html
+│   └── welcome.html
 ├── test_runner.py
-├── tests/
-│   ├── functional_tests/
-│   │   ├── __init_.py
+├── tests
+│   ├── functional_tests
 │   │   ├── conftest.py
 │   │   ├── test_authentication.py
 │   │   ├── test_points_display.py
 │   │   └── test_reservations.py
-│   ├── integration_tests/
-│   └── unit_tests/
-│       ├── __init__.py
+│   ├── integration_tests
+│   │   └── test_booking_integration.py
+│   ├── load_tests
+│   │   └── locustfile.py
+│   └── unit_tests
 │       ├── test_config.py
 │       ├── test_data_manager.py
 │       ├── test_server.py
@@ -162,7 +175,7 @@ GUDLFT/
 
 # <div align="center"> 🇫🇷 GUDLFT <br> *Portail d’inscription aux compétitions*
 
-GUDLFT est une application **Flask** qui permet aux clubs d’escalade de
+GUDLFT est une application **Flask** qui permet aux clubs d'haltérophilie de
 réserver des places pour des compétitions tout en gérant leur capital de
 points.  
 Ce projet s’inscrit dans le cadre du parcours *Tests en Python* d’OpenClassrooms
@@ -272,51 +285,62 @@ avec n’importe quel navigateur.
 
 ---
 
-## Load testing
+## Test de charge et de performance (Locust)
 
+Pour lancer les tests de chargement et de performance, il faut commencer par un peu d'installation :
 ```bash
-########################################################
-#                   IN PROGRESS                        
-########################################################
+export LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # Sur macOS/Linux
+set LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # Sur Windows
+```
+Ensuite, il ne reste qu'à lancer les tests à l'aide la commande :
+```bash
+locust --config .locust.conf
 ```
 
+- Vous devrier voir apparaître un message spécifiant que l'interface web est lancée à `http://0.0.0.0:8089/`  
+- Ouvrez votre navigateur et rendez-vous à cette adresse.
+- L'interface web de Locust devrait apparaître avec les champs pré-remplis selon les paramètres disponibles dans le fichier `.locust.conf`
+- Enfin, laissez-vous guider par l'interface afin de générer un rapport de performance.
 ---
 
 ## Structure du projet
 
 ```bash
-GUDLFT/
-├── __init__.py
+GUDLFT
 ├── clubs.json
+├── README.md
 ├── competitions.json
 ├── config.py
 ├── data_manager.py
-├── htmlcov/                     # Rapport de couverture de tests
-├── pytest.ini
-├── README.md
-├── requirements.txt
-├── server.py
-├── static/
-│   └── style.css               # Feuille de style globale
-├── templates/
-│   ├── base.html               # Gabarit principal
+├── htmlcov                  # Rapport de Coverage 
+│   ├── __init___py.html
+│   ├── class_index.html
+│   ├── config_py.html
+│   ├── ... 
+│   ├── ...
+├── server.py                # Point d'entrée de l'application
+├── static
+│   └── style.css
+├── templates
+│   ├── base.html
 │   ├── booking.html
 │   ├── index.html
+│   ├── macros
+│   │   └── display_message.html
 │   ├── points.html
-│   ├── welcome.html
-│   └── macros/
-│       └── display_message.html
+│   └── welcome.html
 ├── test_runner.py
-├── tests/
-│   ├── functional_tests/
-│   │   ├── __init_.py
+├── tests
+│   ├── functional_tests
 │   │   ├── conftest.py
 │   │   ├── test_authentication.py
 │   │   ├── test_points_display.py
 │   │   └── test_reservations.py
-│   ├── integration_tests/
-│   └── unit_tests/
-│       ├── __init__.py
+│   ├── integration_tests
+│   │   └── test_booking_integration.py
+│   ├── load_tests
+│   │   └── locustfile.py
+│   └── unit_tests
 │       ├── test_config.py
 │       ├── test_data_manager.py
 │       ├── test_server.py
