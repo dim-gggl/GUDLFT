@@ -1,7 +1,7 @@
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv) [![Static Badge](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-%233775A9?style=plastic&logo=python&logoColor=%23FFE569)](https://www.python.org/) [![Static Badge](https://img.shields.io/badge/flask-3.1.1-%239ECEE3?style=plastic&logo=flask)](https://github.com/pallets/flask/)  
 [![Static Badge](https://img.shields.io/badge/pytest-8.4.1-%233775A9?style=plastic&logo=pytest)](https://github.com/pytest-dev/pytest/) [![Static Badge](https://img.shields.io/badge/coverage.py-7.10.3-%231AE058?style=plastic&logo=coverage)](https://github.com/nedbat/coveragepy) [![Static Badge](https://img.shields.io/badge/locust-2.38.1-%23125338?style=plastic&logo=locust)](https://locust.io/)  
   
-> [Français](#-gudlft--portail-dinscription-aux-compétitions)
+> [Français](#--gudlft--portail-dinscription-aux-compétitions)
 
 # <div align="center"> 🇬🇧 GUDLFT <br> *Competition registration portal*
 
