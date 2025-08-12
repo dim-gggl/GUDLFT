@@ -1,3 +1,8 @@
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv) [![Static Badge](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-%233775A9?style=plastic&logo=python&logoColor=%23FFE569)](https://www.python.org/) [![Static Badge](https://img.shields.io/badge/flask-3.1.1-%239ECEE3?style=plastic&logo=flask)](https://github.com/pallets/flask/)  
+[![Static Badge](https://img.shields.io/badge/pytest-8.4.1-%233775A9?style=plastic&logo=pytest)](https://github.com/pytest-dev/pytest/) [![Static Badge](https://img.shields.io/badge/coverage.py-7.10.3-%231AE058?style=plastic&logo=coverage)](https://github.com/nedbat/coveragepy) [![Static Badge](https://img.shields.io/badge/locust-2.38.1-%23125338?style=plastic&logo=locust)](https://locust.io/)  
+  
+> [Français](#-gudlft--portail-dinscription-aux-compétitions)
+
 # <div align="center"> 🇬🇧 GUDLFT <br> *Competition registration portal*
 
 GUDLFT is a **Flask** application that enables powerlifting clubs to
@@ -26,13 +31,17 @@ and focuses on **code quality**:
 
 ## Features
 
-What the application does:
+> _What does **GUDLFT** do ?_
 
-- Easy access connection to the app via e-mail address.
-- A view of upcoming competitions.
-- A platform to reserve places according to the number of points available.
-- A real-time display of remaining points by club.
-- Data management via two JSON files: `clubs.json` and `competitions.json`.
+- Displays a list of registered clubs with their points.
+- Is accessible via an e-mail address.
+- Allows to reserve places according to:
+  - the number of points the club has.
+  - the number of places available.
+- Is covered by unit and functional tests.
+- Data management via two JSON files: 
+  - `clubs.json`
+  - `competitions.json`
 
 ---
 
@@ -45,37 +54,41 @@ What the application does:
 | **Points requirement** | The club must have **at least** as many points as the number of places requested.
 | **Past competitions** | It is not possible to book a competition that has already passed. |
 
-    These rules are centralized in `validators.py` and covered by unit and functional tests.
+   > _These rules are centralized in `validators.py`._
 
 ---
 
 ## Setup
 
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/dim-gggl/GUDLFT.git
-   cd GUDLFT
-   ```
-2. **Create a virtual environment** (recommended)
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate # under macOS/Linux
-   venv\Scripts\activate # under Windows
-   ```
+1. **Clone this repo**  
+
+```bash
+git clone https://github.com/dim-gggl/GUDLFT.git
+cd GUDLFT
+```
+2. **Create a virtual environment** (recommended)  
+  
+```bash
+python3 -m venv .venv
+source .venv/bin/activate # under macOS/Linux
+.venv\Scripts\activate # under Windows
+```
 3. **Install dependencies**
+  
+There's a lot of packages listed in the requirements (see the end of the README to check [the dependency tree](#dependencies-tree-generated-with-uv-tree)).
    ```bash
    pip install -r requirements.txt
    ```
 
 ---
 
-## Launch application
+## Launch **GUDLFT**
 
 ```bash
 python server.py
 ```
 
-By default, the application listens on `http://localhost:5000`.  
+By default, the application listens on `http://127.0.0.1:5000`.  
 The following environment variables can be overridden:
 
 | Variable | Default value | Description |
@@ -91,27 +104,31 @@ The following environment variables can be overridden:
 The test suite is written with **pytest** :
 
 ```bash
-pytest # run all tests
-pytest -q # silent mode
-coverage run -m pytest # adds a coverage report
-coverage html # generates an HTML report
+pytest            # run all tests
+pytest -q         # silent mode
+coverage report   # display a coverage report in the terminal
+coverage html     # generate an HTML report in the `htmlcov/` directory
 ```
 
 - **Unit tests**: business logic (`tests/unit_tests/`).
-- **Functional testing**: user scenarios via Flask client (`tests/functional_tests/`).
+- **Functional tests**: user scenarios via Flask client (`tests/functional_tests/`).
 - **Integration tests**: files ready for future tests (`tests/integration_tests/`).
 
-The HTML coverage report is generated in `htmlcov/` and can be opened
+The HTML coverage report is generated in `htmlcov/` and can be open
 with any browser.
 
 ---
 
-## Load testing (Locust)
+## Performance testing (Locust)
 
-To launch the loading and performance tests, we need to start with a bit of installation:
+To launch the performance tests, we need to start with a bit of installation:
+
 ```bash
-export LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # On macOS/Linux
-set LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # On Windows
+# Under macOS/Linux :
+export LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py"
+
+# Under Windows :
+set LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py"
 ```
 
 Then, we can launch the tests using the command:
@@ -171,6 +188,72 @@ GUDLFT
 │       └── test_validators.py
 └── validators.py
 ```
+
+## Dependencies Tree (Generated with `uv tree`)
+
+```bash
+├── coverage v7.10.3
+├── flask v3.1.1
+│   ├── blinker v1.9.0
+│   ├── click v8.2.1
+│   ├── itsdangerous v2.2.0
+│   ├── jinja2 v3.1.6
+│   │   └── markupsafe v3.0.2
+│   ├── markupsafe v3.0.2
+│   └── werkzeug v3.1.3
+│       └── markupsafe v3.0.2
+├── locust v2.38.1            # Most of the required packages are Locust dependencies.
+│   ├── configargparse v1.7.1
+│   ├── flask v3.1.1 (*)
+│   ├── flask-cors v6.0.1
+│   │   ├── flask v3.1.1 (*)
+│   │   └── werkzeug v3.1.3 (*)
+│   ├── flask-login v0.6.3
+│   │   ├── flask v3.1.1 (*)
+│   │   └── werkzeug v3.1.3 (*)
+│   ├── gevent v25.5.1
+│   │   ├── greenlet v3.2.4
+│   │   ├── zope-event v5.1.1
+│   │   │   └── setuptools v80.9.0
+│   │   └── zope-interface v7.2
+│   │       └── setuptools v80.9.0
+│   ├── geventhttpclient v2.3.4
+│   │   ├── brotli v1.1.0
+│   │   ├── certifi v2025.8.3
+│   │   ├── gevent v25.5.1 (*)
+│   │   └── urllib3 v2.5.0
+│   ├── locust-cloud v1.26.3
+│   │   ├── configargparse v1.7.1
+│   │   ├── gevent v25.5.1 (*)
+│   │   ├── platformdirs v4.3.8
+│   │   ├── python-engineio v4.12.2
+│   │   │   └── simple-websocket v1.1.0
+│   │   │       └── wsproto v1.2.0
+│   │   │           └── h11 v0.16.0
+│   │   └── python-socketio[client] v5.13.0
+│   │       ├── bidict v0.23.1
+│   │       ├── python-engineio v4.12.2 (*)
+│   │       ├── requests v2.32.4 (extra: client)
+│   │       │   ├── certifi v2025.8.3
+│   │       │   ├── charset-normalizer v3.4.3
+│   │       │   ├── idna v3.10
+│   │       │   └── urllib3 v2.5.0
+│   │       └── websocket-client v1.8.0 (extra: client)
+│   ├── msgpack v1.1.1
+│   ├── psutil v7.0.0
+│   ├── pyzmq v27.0.1
+│   ├── requests v2.32.4 (*)
+│   ├── setuptools v80.9.0
+│   └── werkzeug v3.1.3 (*)
+└── pytest v8.4.1
+    ├── iniconfig v2.1.0
+    ├── packaging v25.0
+    ├── pluggy v1.6.0
+    └── pygments v2.19.2
+
+(*) Package tree already displayed
+```  
+  
 ---
 
 # <div align="center"> 🇫🇷 GUDLFT <br> *Portail d’inscription aux compétitions*
@@ -202,14 +285,17 @@ et met l’accent sur la **qualité du code** :
 
 ## Fonctionnalités
 
-Ce que permet l'application :
+> _Que fait **GUDLFT** ?_
 
-- Connexion rapide d’un club par adresse e-mail.
-- Visualisation des compétitions à venir.
-- Réservation de places selon le nombre de points disponibles.
-- Affichage en temps réel des points restants par club.
+- Affiche la liste des clubs inscrits avec leur capital de points.
+- Est accessible via une adresse e-mail.
+- Permet de réserver des places selon :
+  - le nombre de points disponibles.
+  - le nombre de places disponibles.
+- Est couvert par des tests unitaires et fonctionnels.
 - Gestion des données via deux fichiers JSON :  
-  `clubs.json` et `competitions.json`.
+  - `clubs.json`
+  - `competitions.json`
 
 ---
 
@@ -222,29 +308,29 @@ Ce que permet l'application :
 | **Points du club** | Le club doit posséder **au moins** autant de points que de places demandées. |
 | **Compétitions passées** | Il est impossible de réserver une compétition déjà passée dans le temps. |
 
-Ces règles sont centralisées dans `validators.py` et couvertes par des tests
-unitaires et fonctionnels.
+> _Ces règles sont centralisées dans `validators.py`._
 
 ---
 
 ## Installation
 
 1. **Cloner le dépôt**  
-   ```bash
-   git clone https://github.com/dim-gggl/GUDLFT.git
-   cd GUDLFT
-   ```
+```bash
+git clone https://github.com/dim-gggl/GUDLFT.git
+cd GUDLFT
+```
 2. **Créer un environnement virtuel** (optionnel mais recommandé)  
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate   # sous macOS/Linux
-   venv\Scripts\activate      # sous Windows
-   ```
+```bash
+python3 -m venv venv
+source venv/bin/activate   # sous macOS/Linux
+venv\Scripts\activate      # sous Windows
+```
 3. **Installer les dépendances**  
-   ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
+> Il y a beaucoup de packages listés dans le fichier requirements.txt (voir la fin du README pour vérifier l'arbre des dépendances).
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
 ---
 
@@ -272,7 +358,7 @@ La suite de tests est écrite avec **pytest** :
 ```bash
 pytest          # lance tous les tests
 pytest -q       # mode silencieux
-coverage run -m pytest # ajoute un rapport de couverture
+coverage report # affiche un rapport de couverture
 coverage html # génère un rapport HTML
 ```
 
@@ -289,8 +375,11 @@ avec n’importe quel navigateur.
 
 Pour lancer les tests de chargement et de performance, il faut commencer par un peu d'installation :
 ```bash
-export LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # Sur macOS/Linux
-set LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py" # Sur Windows
+# Sur macOS/Linux :
+export LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py"
+
+# Sur Windows :
+set LOCUST_LOCUSTFILE="tests/locust_files/locustfile.py"
 ```
 Ensuite, il ne reste qu'à lancer les tests à l'aide la commande :
 ```bash
@@ -346,4 +435,69 @@ GUDLFT
 │       ├── test_server.py
 │       └── test_validators.py
 └── validators.py
+```
+
+## Arbre des dépendances (Généré avec `uv tree`)
+
+```bash
+├── coverage v7.10.3
+├── flask v3.1.1
+│   ├── blinker v1.9.0
+│   ├── click v8.2.1
+│   ├── itsdangerous v2.2.0
+│   ├── jinja2 v3.1.6
+│   │   └── markupsafe v3.0.2
+│   ├── markupsafe v3.0.2
+│   └── werkzeug v3.1.3
+│       └── markupsafe v3.0.2
+├── locust v2.38.1            # La plupart des packages requis sont des dépendances de Locust.
+│   ├── configargparse v1.7.1
+│   ├── flask v3.1.1 (*)
+│   ├── flask-cors v6.0.1
+│   │   ├── flask v3.1.1 (*)
+│   │   └── werkzeug v3.1.3 (*)
+│   ├── flask-login v0.6.3
+│   │   ├── flask v3.1.1 (*)
+│   │   └── werkzeug v3.1.3 (*)
+│   ├── gevent v25.5.1
+│   │   ├── greenlet v3.2.4
+│   │   ├── zope-event v5.1.1
+│   │   │   └── setuptools v80.9.0
+│   │   └── zope-interface v7.2
+│   │       └── setuptools v80.9.0
+│   ├── geventhttpclient v2.3.4
+│   │   ├── brotli v1.1.0
+│   │   ├── certifi v2025.8.3
+│   │   ├── gevent v25.5.1 (*)
+│   │   └── urllib3 v2.5.0
+│   ├── locust-cloud v1.26.3
+│   │   ├── configargparse v1.7.1
+│   │   ├── gevent v25.5.1 (*)
+│   │   ├── platformdirs v4.3.8
+│   │   ├── python-engineio v4.12.2
+│   │   │   └── simple-websocket v1.1.0
+│   │   │       └── wsproto v1.2.0
+│   │   │           └── h11 v0.16.0
+│   │   └── python-socketio[client] v5.13.0
+│   │       ├── bidict v0.23.1
+│   │       ├── python-engineio v4.12.2 (*)
+│   │       ├── requests v2.32.4 (extra: client)
+│   │       │   ├── certifi v2025.8.3
+│   │       │   ├── charset-normalizer v3.4.3
+│   │       │   ├── idna v3.10
+│   │       │   └── urllib3 v2.5.0
+│   │       └── websocket-client v1.8.0 (extra: client)
+│   ├── msgpack v1.1.1
+│   ├── psutil v7.0.0
+│   ├── pyzmq v27.0.1
+│   ├── requests v2.32.4 (*)
+│   ├── setuptools v80.9.0
+│   └── werkzeug v3.1.3 (*)
+└── pytest v8.4.1
+    ├── iniconfig v2.1.0
+    ├── packaging v25.0
+    ├── pluggy v1.6.0
+    └── pygments v2.19.2
+
+(*) Package tree already displayed
 ```
