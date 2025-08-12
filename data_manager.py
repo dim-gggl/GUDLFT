@@ -32,7 +32,8 @@ def update_clubs_and_competitions(club: dict, competition: dict):
     clubs = [c for c in CLUBS if c["name"] != club["name"]]
     clubs.append(club)
     CLUBS = clubs
-    competitions = [comp for comp in COMPETITIONS if comp["name"] != competition["name"]]
+    competitions = [comp for comp in COMPETITIONS if \
+        comp["name"] != competition["name"]]
     competitions.append(competition)
     COMPETITIONS = competitions
 
@@ -47,7 +48,7 @@ def save_clubs_and_competitions(
     )
 
 
-def get_obj_by_field(key, value, list_of_dicts):
+def get_obj_by_field(key: str, value: str, list_of_dicts: list) -> dict:
     return [item for item in list_of_dicts if item[key] == value][0]
 
 
@@ -59,7 +60,7 @@ def update_data_after_booking(
     after a booking.
     Returns an error message if the booking is not possible.
     """
-    # D'abord, valider la réservation
+    # First, validate the booking
     reservation_error = validate_places_required(
         places_required, club, competition
     )

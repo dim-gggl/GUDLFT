@@ -29,7 +29,7 @@ def validate_competition_date(competition):
     otherwise returns None.
     """
     if competition["date"] < datetime.now().isoformat():
-        return "You cannot book past competitions"
+        return "This competition has already ended"
     return None
 
 def mail_is_unknown(email, clubs):

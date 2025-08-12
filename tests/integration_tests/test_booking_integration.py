@@ -171,7 +171,7 @@ def test_booking_places_for_a_past_competition(flask_app_context):
     with _patch_environment(clubs, competitions):
         error = update_data_after_booking(competition, club, 2)
 
-    assert error == "You cannot book past competitions"
+    assert error == "This competition has already ended"
     # No update should have occurred
     assert competition["number_of_places"] == "10"
     assert club["points"] == "15"

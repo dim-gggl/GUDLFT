@@ -54,6 +54,6 @@ def test_clubs_cannot_book_past_competitions(test_app, mock_json_functions):
         )
         competition = mock_json_functions.get_competition_by_name("Fall Classic")
         if competition["date"] < datetime.now().isoformat():
-            assert "You cannot book past competitions" in response.data.decode("utf-8")
+            assert "This competition has already ended" in response.data.decode("utf-8")
         else:
             assert response.status_code == 200

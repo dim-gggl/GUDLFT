@@ -97,7 +97,7 @@ def test_past_competition():
     past_date = (datetime.now() - timedelta(days=1)).isoformat()
     competition = {"date": past_date}
     result = validate_competition_date(competition)
-    assert result == "You cannot book past competitions"
+    assert result == "This competition has already ended"
 
 def test_current_competition():
     """
@@ -106,4 +106,4 @@ def test_current_competition():
     current_date = datetime.now().isoformat()
     competition = {"date": current_date}
     result = validate_competition_date(competition)
-    assert result == "You cannot book past competitions"
+    assert result == "This competition has already ended"
