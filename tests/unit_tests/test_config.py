@@ -15,13 +15,13 @@ class TestConfig:
         """Test the default secret key"""
         with patch.dict(os.environ, {}, clear=True):
             config_obj = Config()
-            assert config_obj.SECRET_KEY == 'something_special'
+            assert config_obj.SECRET_KEY == "something_special"
     
     def test_secret_key_is_loaded_from_env(self):
         """Test the secret key from environment variables"""
-        with patch.dict(os.environ, {'SECRET_KEY': 'custom_secret_key'}, clear=True):
+        with patch.dict(os.environ, {"SECRET_KEY": "custom_secret_key"}, clear=True):
             config_obj = Config()
-            assert config_obj.SECRET_KEY == 'custom_secret_key'
+            assert config_obj.SECRET_KEY == "custom_secret_key"
     
     def test_debug_mode_is_default(self):
         """Test the default debug mode"""
@@ -31,13 +31,13 @@ class TestConfig:
     
     def test_debug_mode_with_env_false(self):
         """Test the debug mode from environment variables (false)"""
-        with patch.dict(os.environ, {'FLASK_DEBUG': '0'}, clear=True):
+        with patch.dict(os.environ, {"FLASK_DEBUG": "0"}, clear=True):
             config_obj = Config()
             assert config_obj.DEBUG is False
     
     def test_debug_mode_with_env_true(self):
         """Test the debug mode from environment variables (true)"""
-        with patch.dict(os.environ, {'FLASK_DEBUG': '1'}, clear=True):
+        with patch.dict(os.environ, {"FLASK_DEBUG": "1"}, clear=True):
             config_obj = Config()
             assert config_obj.DEBUG is True
     
@@ -45,13 +45,13 @@ class TestConfig:
         """Test the default port"""
         with patch.dict(os.environ, {}, clear=True):
             config_obj = Config()
-            assert config_obj.RUN_PORT == '5000'
+            assert config_obj.RUN_PORT == "5000"
     
     def test_run_port_is_loaded_from_env(self):
         """Test the port from environment variables"""
-        with patch.dict(os.environ, {'FLASK_RUN_PORT': '8080'}, clear=True):
+        with patch.dict(os.environ, {"FLASK_RUN_PORT": "8080"}, clear=True):
             config_obj = Config()
-            assert config_obj.RUN_PORT == '8080'
+            assert config_obj.RUN_PORT == "8080"
     
     def test_testing_mode_is_false_by_default(self):
         """Test the default testing mode"""
@@ -65,7 +65,7 @@ class TestConfigDict:
     def test_config_structure(self):
         """Test the structure of the configuration dictionary"""
         assert "default" in config
-        assert hasattr(config["default"], 'SECRET_KEY')
+        assert hasattr(config["default"], "SECRET_KEY")
     
     def test_config_default_is_config_instance(self):
         """Test that the default configuration is a Config instance"""
