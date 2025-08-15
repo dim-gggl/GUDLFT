@@ -1,8 +1,8 @@
 import pytest
+import json
 from unittest.mock import patch
 from copy import deepcopy
 
-import server
 from server import app
 from config import Config
 
@@ -10,38 +10,28 @@ from config import Config
 ########################################################
 #                   MOCK DATA
 ########################################################
+clubs_data = []
+competitions_data = []
 
-clubs_data = [
+with open("clubs.json", "r") as f:
+    clubs_data.extend(json.load(f)["clubs"])
+
+with open("competitions.json", "r") as f:
+    competitions_data.extend(json.load(f)["competitions"])
+
+# Changed the date to open it to booking
+competitions_data[0]["date"] = "2026-03-27 10:00:00"
+competitions_data[1]["date"] = "2026-10-22 13:30:00"
+
+# An old version of the competition so 
+# we"re still able to test a past one
+competitions_data.append(
     {
-        "name": "Simply Lift", 
-        "email": "john@simplylift.co", 
-        "points": 13
-    },
-    {
-        "name": "Iron Temple", 
-        "email": "admin@irontemple.com", 
-        "points": 4
-    },
-    {
-        "name": "She Lifts", 
-        "email": "kate@shelifts.co.uk", 
-        "points": 12
+        "name": "Fall Classics", 
+        "date": "2024-10-22 13:30:00",
+        "number_of_places": "13"
     }
-]
-
-competitions_data = [
-    {
-        "name": "Spring Festival", 
-        "date": "2026-03-27 10:00:00", 
-        "number_of_places": 25
-    },
-    {
-        "name": "Fall Classic", 
-        "date": "2026-10-22 13:30:00", 
-        "number_of_places": 13
-    }
-]
-
+)
 
 ########################################################
 #           MOCK DATA MANAGER
@@ -56,6 +46,8 @@ class MockDataManager:
     
     def reset_data(self):
         """Reset data to initial state"""
+        # Creating independent copies of the initial loaded data
+        # (So we don"t modify the original data throughout the tests)
         self.stored_clubs = deepcopy(clubs_data)
         self.stored_competitions = deepcopy(competitions_data)
     
@@ -98,7 +90,7 @@ class MockDataManager:
 def test_app():
     """Flask test app fixture with proper configuration"""
     app.config.from_object(Config)
-    app.config['TESTING'] = True
+    app.config["TESTING"] = True
     yield app
 
 
@@ -111,17 +103,17 @@ def mock_data_manager():
 @pytest.fixture
 def mock_json_functions(mock_data_manager):
     """Mock JSON functions fixture with proper patching"""
-    with patch('data_manager.load_data', 
+    with patch("data_manager.load_data", 
                 side_effect=mock_data_manager.load_data), \
-         patch('data_manager.save_json', 
+         patch("data_manager.save_json", 
                 side_effect=mock_data_manager.save_json), \
-         patch('server.CLUBS', 
+         patch("server.CLUBS", 
                 mock_data_manager.stored_clubs), \
-         patch('server.COMPETITIONS', 
+         patch("server.COMPETITIONS", 
                 mock_data_manager.stored_competitions), \
-         patch('data_manager.CLUBS', 
+         patch("data_manager.CLUBS", 
                 mock_data_manager.stored_clubs), \
-         patch('data_manager.COMPETITIONS', 
+         patch("data_manager.COMPETITIONS", 
                 mock_data_manager.stored_competitions):
         mock_data_manager.reset_data()
         yield mock_data_manager
